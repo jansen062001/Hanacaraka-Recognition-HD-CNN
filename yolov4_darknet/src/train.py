@@ -3,13 +3,13 @@ import glob
 import shutil
 import random
 
-YOLO_WEIGHTS_URL = 'https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.conv.29'
-YOLO_WEIGHTS_NAME = 'yolov4-tiny.conv.29'
+YOLO_WEIGHTS_URL = 'https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v3_optimal/yolov4.conv.137'
+YOLO_WEIGHTS_NAME = 'yolov4.conv.137'
 NUMBER_OF_CLASSES = 9
 PERCENTAGE_TRAIN = 90
 PERCENTAGE_TEST = 100 - PERCENTAGE_TRAIN
 IMG_DATASET_EXT = ['jpg', 'png', 'jpeg']
-YOLO_CFG_FILENAME = 'yolov4-tiny-3l.cfg'
+YOLO_CFG_FILENAME = 'yolov4-custom.cfg'
 
 
 def make_train_dir():
