@@ -23,7 +23,7 @@ def build_darknet():
         'sed -i "s/GPU=0/GPU=1/" Makefile;' + \
         'sed -i "s/CUDNN=0/CUDNN=1/" Makefile;' + \
         'sed -i "s/CUDNN_HALF=0/CUDNN_HALF=1/" Makefile;' + \
-        'sed -i "s/ARCH= -gencode arch=compute_35,code=sm_35/ARCH= -gencode arch=compute_61,code=[sm_61,compute_61]/" Makefile;' + \
+        'sed -i "s/ARCH= -gencode arch=compute_35,code=sm_35/ARCH= ' + ARCH + '/" Makefile;' + \
         'make'
     os.system(cmd)
 

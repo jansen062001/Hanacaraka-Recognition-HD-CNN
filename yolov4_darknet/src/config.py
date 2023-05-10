@@ -7,6 +7,7 @@ PERCENTAGE_TRAIN = 90
 PERCENTAGE_TEST = 100 - PERCENTAGE_TRAIN
 IMG_DATASET_EXT = ['jpg', 'png', 'jpeg']
 YOLO_CFG_FILENAME = 'yolov4-custom.cfg'
+ARCH = '-gencode arch=compute_61,code=[sm_61,compute_61]'
 
 WORKING_DIR = os.path.abspath(os.path.join(
     os.path.dirname(os.path.abspath(__file__)), '..'))
