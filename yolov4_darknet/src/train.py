@@ -109,6 +109,20 @@ def move_cfg_file():
     )
 
 
+def check_train_test_data():
+    with open(os.path.join(DARKNET_DIR, "data", "train.txt"), "r") as f:
+        for line in f.readlines():
+            if os.path.exists(os.path.join(DARKNET_DIR, line.strip())) == False:
+                return False
+
+    with open(os.path.join(DARKNET_DIR, "data", "test.txt"), "r") as f:
+        for line in f.readlines():
+            if os.path.exists(os.path.join(DARKNET_DIR, line.strip())) == False:
+                return False
+
+    return True
+
+
 def run_training():
     os.chdir(DARKNET_DIR)
 
@@ -130,4 +144,8 @@ if __name__ == "__main__":
     create_obj_names()
     split_train_valid()
     move_cfg_file()
-    run_training()
+
+    if check_train_test_data():
+        run_training()
+    else:
+        print("Cannot run training because train/test data doesn't exist")
