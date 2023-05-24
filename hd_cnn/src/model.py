@@ -1,6 +1,20 @@
-from keras.layers import Input, Conv2D, Dropout, MaxPooling2D, Flatten, Dense, Rescaling
+from keras.layers import (
+    Input,
+    Conv2D,
+    Dropout,
+    MaxPooling2D,
+    Flatten,
+    Dense,
+    Rescaling,
+    BatchNormalization,
+    GaussianNoise,
+    MaxPool2D,
+)
 from keras.models import Model
 from keras import optimizers
+from keras.regularizers import L2
+
+from .config import *
 from config import *
 
 
@@ -57,7 +71,7 @@ def single_classifier_model(
     model.compile(
         optimizer=sgd_optimizers,
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["categorical_accuracy"],
     )
 
     return model
@@ -66,9 +80,9 @@ def single_classifier_model(
 def coarse_classifier_model(learning_rate, load_weight=False):
     model = single_classifier_model(
         SINGLE_CLASSIFIER_MODEL_LEARNING_RATE,
-        IMG_WIDTH,
-        IMG_HEIGHT,
-        IMG_CHANNEL,
+        HD_CNN_IMG_WIDTH,
+        HD_CNN_IMG_HEIGHT,
+        HD_CNN_IMG_CHANNEL,
         FINE_CLASS_NUM,
     )
     model.load_weights(SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH)
@@ -93,7 +107,7 @@ def coarse_classifier_model(learning_rate, load_weight=False):
     coarse_model.compile(
         optimizer=sgd_optimizers,
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["categorical_accuracy"],
     )
 
     for i in range(len(coarse_model.layers) - 1):
@@ -108,14 +122,14 @@ def coarse_classifier_model(learning_rate, load_weight=False):
 def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
     model = single_classifier_model(
         SINGLE_CLASSIFIER_MODEL_LEARNING_RATE,
-        IMG_WIDTH,
-        IMG_HEIGHT,
-        IMG_CHANNEL,
+        HD_CNN_IMG_WIDTH,
+        HD_CNN_IMG_HEIGHT,
+        HD_CNN_IMG_CHANNEL,
         FINE_CLASS_NUM,
     )
-    model.load_weights(SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH)
-    for i in range(len(model.layers)):
-        model.layers[i].trainable = False
+    # model.load_weights(SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH)
+    # for i in range(len(model.layers)):
+    #     model.layers[i].trainable = False
 
     net = Conv2D(1024, 1, strides=1, padding="same", activation="elu")(
         model.layers[-8].output
@@ -135,11 +149,11 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
     fine_model.compile(
         optimizer=sgd_optimizers,
         loss="categorical_crossentropy",
-        metrics=["accuracy"],
+        metrics=["categorical_accuracy"],
     )
 
-    for i in range(len(fine_model.layers) - 1):
-        fine_model.layers[i].set_weights(model.layers[i].get_weights())
+    # for i in range(len(fine_model.layers) - 1):
+    #     fine_model.layers[i].set_weights(model.layers[i].get_weights())
 
     if load_weight:
         fine_model.load_weights(
@@ -147,3 +161,74 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
         )
 
     return fine_model
+
+
+def vgg16_model(learning_rate, dropout_rate):
+    # input
+    input = Input(
+        shape=(
+            HD_CNN_IMG_WIDTH,
+            HD_CNN_IMG_HEIGHT,
+            HD_CNN_IMG_CHANNEL,
+        )
+    )
+
+    x = BatchNormalization()(input)
+    x = GaussianNoise(0.01)(x)
+
+    # 1st Conv Block
+    x = Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(x)
+    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
+
+    # 2nd Conv Block
+    x = Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(x)
+    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
+
+    # 3rd Conv block
+    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
+    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
+
+    # 4th Conv block
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
+
+    # 5th Conv block
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
+    x = MaxPool2D(pool_size=3, strides=3, padding="same")(x)
+
+    # Fully connected layers
+    flatten = Flatten()(x)
+    fc = Dense(
+        units=2048,
+        activation="relu",
+        kernel_regularizer=L2(0.001),
+        bias_regularizer=L2(0.001),
+    )(flatten)
+    fc = Dropout(dropout_rate)(fc)
+    fc = Dense(
+        units=2048,
+        activation="relu",
+        kernel_regularizer=L2(0.001),
+        bias_regularizer=L2(0.001),
+    )(fc)
+    fc = Dropout(dropout_rate)(fc)
+    output = Dense(FINE_CLASS_NUM, activation="softmax")(fc)
+
+    # creating the model
+    model = Model(inputs=input, outputs=output)
+    optimizer = optimizers.Adam(learning_rate)
+    model.compile(
+        optimizer=optimizer,
+        loss="categorical_crossentropy",
+        metrics=["categorical_accuracy"],
+    )
+
+    return model

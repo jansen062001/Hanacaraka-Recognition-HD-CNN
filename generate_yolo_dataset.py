@@ -2,6 +2,8 @@ import os
 import glob
 import shutil
 
+from config import *
+
 
 def get_coarse_class_name(class_id, classes_txt_path):
     with open(classes_txt_path, "r") as f:
@@ -22,7 +24,7 @@ def get_coarse_class_name(class_id, classes_txt_path):
 current_file_path = os.path.dirname(os.path.abspath(__file__))
 yolo_dataset_dir = os.path.join(current_file_path, "yolov4_darknet", "dataset")
 raw_yolo_dataset_dir = os.path.join(current_file_path, "dataset", "yolov4_darknet")
-ext = ["jpg", "png", "jpeg"]
+ext = YOLO_IMG_DATASET_EXT
 class_list = []
 classes_txt_path = os.path.join(raw_yolo_dataset_dir, "classes.txt")
 

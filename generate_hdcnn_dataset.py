@@ -2,8 +2,7 @@ import os
 import glob
 import cv2
 
-IMG_RESIZE_WIDTH = 32
-IMG_RESIZE_HEIGHT = 32
+from config import *
 
 
 def crop_img(img, x_center, y_center, w, h):
@@ -40,7 +39,7 @@ def get_class_name(class_id, classes_txt_path):
 current_file_path = os.path.dirname(os.path.abspath(__file__))
 raw_hdcnn_dataset_dir = os.path.join(current_file_path, "dataset", "hd_cnn")
 hdcnn_dataset_dir = os.path.join(current_file_path, "hd_cnn", "dataset")
-ext = ["jpg", "png", "jpeg"]
+ext = YOLO_IMG_DATASET_EXT
 classes_txt_path = os.path.join(raw_hdcnn_dataset_dir, "classes.txt")
 coarse_dir = os.path.join(hdcnn_dataset_dir, "coarse")
 fine_dir = os.path.join(hdcnn_dataset_dir, "fine")
@@ -69,7 +68,7 @@ for ext in ext:
 
                 cropped_img = crop_img(img, x_center, y_center, w, h)
                 resized_img = cv2.resize(
-                    cropped_img, (IMG_RESIZE_WIDTH, IMG_RESIZE_HEIGHT)
+                    cropped_img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT)
                 )
 
                 class_name = get_class_name(class_id, classes_txt_path)

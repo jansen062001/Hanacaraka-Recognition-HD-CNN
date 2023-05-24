@@ -1,5 +1,4 @@
 import tensorflow as tf
-from config import *
 import matplotlib.pyplot as plt
 from model import *
 from keras.callbacks import TensorBoard, ModelCheckpoint
@@ -7,10 +6,13 @@ import time
 import numpy as np
 import tensorflow_datasets as tfds
 
+from .config import *
+from config import *
+
 
 def save_chart(history, path, initial_epoch, epochs):
-    acc = history.history["accuracy"]
-    val_acc = history.history["val_accuracy"]
+    acc = history.history["categorical_accuracy"]
+    val_acc = history.history["val_categorical_accuracy"]
 
     loss = history.history["loss"]
     val_loss = history.history["val_loss"]
@@ -39,7 +41,7 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     plt.subplot(4, 1, 1)
     count = 0
     for history in historys:
-        acc = history.history["accuracy"]
+        acc = history.history["categorical_accuracy"]
 
         plt.plot(epochs_range, acc, label="Fine {}".format(count))
 
@@ -50,7 +52,7 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     plt.subplot(4, 1, 2)
     count = 0
     for history in historys:
-        val_acc = history.history["val_accuracy"]
+        val_acc = history.history["val_categorical_accuracy"]
 
         plt.plot(epochs_range, val_acc, label="Fine {}".format(count))
 
@@ -89,7 +91,7 @@ def train_single_classifier(initial_epoch, epochs):
         validation_split=VALIDATION_SPLIT,
         subset="training",
         seed=123,
-        image_size=(IMG_WIDTH, IMG_HEIGHT),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
         label_mode="categorical",
     )
@@ -99,16 +101,16 @@ def train_single_classifier(initial_epoch, epochs):
         validation_split=VALIDATION_SPLIT,
         subset="validation",
         seed=123,
-        image_size=(IMG_WIDTH, IMG_HEIGHT),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
         label_mode="categorical",
     )
 
     model = single_classifier_model(
         SINGLE_CLASSIFIER_MODEL_LEARNING_RATE,
-        IMG_WIDTH,
-        IMG_HEIGHT,
-        IMG_CHANNEL,
+        HD_CNN_IMG_WIDTH,
+        HD_CNN_IMG_HEIGHT,
+        HD_CNN_IMG_CHANNEL,
         FINE_CLASS_NUM,
     )
 
@@ -146,7 +148,7 @@ def train_coarse_classifier(initial_epoch, epochs):
         validation_split=VALIDATION_SPLIT,
         subset="training",
         seed=123,
-        image_size=(IMG_WIDTH, IMG_HEIGHT),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
         label_mode="categorical",
     )
@@ -156,7 +158,7 @@ def train_coarse_classifier(initial_epoch, epochs):
         validation_split=VALIDATION_SPLIT,
         subset="validation",
         seed=123,
-        image_size=(IMG_WIDTH, IMG_HEIGHT),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
         label_mode="categorical",
     )
@@ -192,10 +194,6 @@ def train_coarse_classifier(initial_epoch, epochs):
 
 
 def train_fine_classifier(initial_epoch, epochs):
-    fine_models = {
-        "models": [{} for i in range(COARSE_CLASS_NUM)],
-        "yhf": [{} for i in range(COARSE_CLASS_NUM)],
-    }
     historys = []
 
     for i in range(COARSE_CLASS_NUM):
@@ -204,7 +202,7 @@ def train_fine_classifier(initial_epoch, epochs):
             validation_split=VALIDATION_SPLIT,
             subset="training",
             seed=123,
-            image_size=(IMG_WIDTH, IMG_HEIGHT),
+            image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
             batch_size=BATCH_SIZE,
             label_mode="categorical",
         )
@@ -214,14 +212,12 @@ def train_fine_classifier(initial_epoch, epochs):
             validation_split=VALIDATION_SPLIT,
             subset="validation",
             seed=123,
-            image_size=(IMG_WIDTH, IMG_HEIGHT),
+            image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
             batch_size=BATCH_SIZE,
             label_mode="categorical",
         )
 
-        fine_models["models"][i] = fine_classifier_model(
-            FINE_CLASSIFIER_MODEL_LEARNING_RATE
-        )
+        model = fine_classifier_model(FINE_CLASSIFIER_MODEL_LEARNING_RATE)
 
         current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
         log_dir = os.path.join(LOG_DIR, current_time)
@@ -236,7 +232,7 @@ def train_fine_classifier(initial_epoch, epochs):
             save_best_only=True,
         )
 
-        history = fine_models["models"][i].fit(
+        history = model.fit(
             train_ds,
             validation_data=val_ds,
             initial_epoch=initial_epoch,
@@ -249,6 +245,57 @@ def train_fine_classifier(initial_epoch, epochs):
     save_train_fine_model_chart(
         historys,
         os.path.join(WORKING_DIR, "fine_classifier_train_chart.png"),
+        initial_epoch,
+        epochs,
+    )
+
+
+def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
+    train_ds = tf.keras.utils.image_dataset_from_directory(
+        FINE_DIR,
+        validation_split=validation_split,
+        subset="training",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=batch_size,
+        label_mode="categorical",
+    )
+
+    val_ds = tf.keras.utils.image_dataset_from_directory(
+        FINE_DIR,
+        validation_split=validation_split,
+        subset="validation",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=batch_size,
+        label_mode="categorical",
+    )
+
+    model = vgg16_model(learning_rate=0.0001, dropout_rate=0.5)
+
+    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
+    log_dir = os.path.join(LOG_DIR, current_time)
+    tensorboard = TensorBoard(
+        log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
+    )
+
+    checkpoint = ModelCheckpoint(
+        filepath=os.path.join(WEIGHTS_DIR, "vgg16_model", "cp.ckpt"),
+        save_weights_only=True,
+        save_best_only=True,
+    )
+
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        initial_epoch=initial_epoch,
+        epochs=epochs,
+        callbacks=[tensorboard, checkpoint],
+    )
+
+    save_chart(
+        history,
+        os.path.join(WORKING_DIR, "single_classifier_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -307,6 +354,6 @@ if __name__ == "__main__":
     if os.path.exists(WEIGHTS_DIR) == False:
         os.mkdir(WEIGHTS_DIR)
 
-    train_single_classifier(initial_epoch=0, epochs=30)
-    train_coarse_classifier(initial_epoch=30, epochs=50)
-    train_fine_classifier(initial_epoch=0, epochs=10)
+    train_single_classifier(initial_epoch=0, epochs=50)
+    train_coarse_classifier(initial_epoch=50, epochs=100)
+    train_fine_classifier(initial_epoch=0, epochs=50)

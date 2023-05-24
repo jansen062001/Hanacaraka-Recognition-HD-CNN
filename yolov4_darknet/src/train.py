@@ -3,6 +3,7 @@ import glob
 import shutil
 import random
 
+from .config import *
 from config import *
 
 
@@ -25,13 +26,13 @@ def build_darknet():
         + 'sed -i "s/CUDNN=0/CUDNN=1/" Makefile;'
         + 'sed -i "s/CUDNN_HALF=0/CUDNN_HALF=1/" Makefile;'
         + 'sed -i "s/ARCH= -gencode arch=compute_35,code=sm_35/ARCH= '
-        + ARCH
+        + YOLO_ARCH
         + '/" Makefile;'
         + "make"
     )
     os.system(cmd)
 
-    cmd = "wget " + YOLO_WEIGHTS_URL
+    cmd = "wget " + YOLO_PRETRAINED_WEIGHTS_URL
     os.system(cmd)
 
 
@@ -39,7 +40,7 @@ def move_dataset_folder():
     if os.path.exists(DARKNET_DATA_DIR) == False:
         os.mkdir(DARKNET_DATA_DIR)
 
-    for ext_name in IMG_DATASET_EXT:
+    for ext_name in YOLO_IMG_DATASET_EXT:
         for path_and_filename in glob.iglob(os.path.join(DATA_DIR, "*." + ext_name)):
             file_title, file_ext = os.path.splitext(os.path.basename(path_and_filename))
 
@@ -55,7 +56,7 @@ def move_dataset_folder():
 
 def create_obj_data():
     with open(os.path.join(DARKNET_DIR, "data", "obj.data"), "w") as f:
-        f.write("classes = " + str(NUMBER_OF_CLASSES) + "\n")
+        f.write("classes = " + str(YOLO_NUMBER_OF_CLASSES) + "\n")
         f.write("train = data/train.txt" + "\n")
         f.write("valid = data/test.txt" + "\n")
         f.write("names = data/obj.names" + "\n")
@@ -75,7 +76,7 @@ def split_train_valid():
     dataset = []
     test_data_idx = []
 
-    for ext_name in IMG_DATASET_EXT:
+    for ext_name in YOLO_IMG_DATASET_EXT:
         for path_and_filename in glob.iglob(
             os.path.join(DARKNET_DATA_DIR, "*." + ext_name)
         ):
@@ -87,7 +88,7 @@ def split_train_valid():
         if random_idx not in test_data_idx:
             test_data_idx.append(random_idx)
 
-        if len(test_data_idx) == int(len(dataset) * PERCENTAGE_TEST / 100):
+        if len(test_data_idx) == int(len(dataset) * YOLO_PERCENTAGE_TEST / 100):
             break
 
     for i in range(len(dataset)):
@@ -130,7 +131,7 @@ def run_training():
         "./darknet detector train data/obj.data cfg/"
         + YOLO_CFG_FILENAME
         + " "
-        + YOLO_WEIGHTS_NAME
+        + YOLO_PRETRAINED_WEIGHTS_NAME
         + " -dont_show -map"
     )
     os.system(cmd)
