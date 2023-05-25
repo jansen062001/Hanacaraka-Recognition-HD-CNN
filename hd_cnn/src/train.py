@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 import numpy as np
-import tensorflow_datasets as tfds
+import argparse
 
 from model import *
 from config import *
@@ -192,61 +192,51 @@ def train_coarse_classifier(initial_epoch, epochs):
     )
 
 
-def train_fine_classifier(initial_epoch, epochs):
-    historys = []
-
-    for i in range(COARSE_CLASS_NUM):
-        train_ds = tf.keras.utils.image_dataset_from_directory(
-            os.path.join(COARSE_FINE_DIR, str(i)),
-            validation_split=VALIDATION_SPLIT,
-            subset="training",
-            seed=123,
-            image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-            batch_size=BATCH_SIZE,
-            label_mode="categorical",
-        )
-
-        val_ds = tf.keras.utils.image_dataset_from_directory(
-            os.path.join(COARSE_FINE_DIR, str(i)),
-            validation_split=VALIDATION_SPLIT,
-            subset="validation",
-            seed=123,
-            image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-            batch_size=BATCH_SIZE,
-            label_mode="categorical",
-        )
-
-        model = fine_classifier_model(FINE_CLASSIFIER_MODEL_LEARNING_RATE)
-
-        current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-        log_dir = os.path.join(LOG_DIR, current_time)
-        tensorboard = TensorBoard(
-            log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
-        )
-
-        filepath = FINE_CLASSIFIER_MODEL_WEIGHTS_PATH.format(str(i))
-        checkpoint = ModelCheckpoint(
-            filepath=filepath,
-            save_weights_only=True,
-            save_best_only=True,
-        )
-
-        history = model.fit(
-            train_ds,
-            validation_data=val_ds,
-            initial_epoch=initial_epoch,
-            epochs=epochs,
-            callbacks=[tensorboard, checkpoint],
-        )
-
-        historys.append(history)
-
-    save_train_fine_model_chart(
-        historys,
-        os.path.join(WORKING_DIR, "fine_classifier_train_chart.png"),
-        initial_epoch,
-        epochs,
+def train_fine_classifier(initial_epoch, epochs, class_idx):
+    train_ds = tf.keras.utils.image_dataset_from_directory(
+        os.path.join(COARSE_FINE_DIR, str(class_idx)),
+        validation_split=VALIDATION_SPLIT,
+        subset="training",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=BATCH_SIZE,
+        label_mode="categorical",
     )
+
+    val_ds = tf.keras.utils.image_dataset_from_directory(
+        os.path.join(COARSE_FINE_DIR, str(class_idx)),
+        validation_split=VALIDATION_SPLIT,
+        subset="validation",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=BATCH_SIZE,
+        label_mode="categorical",
+    )
+
+    model = fine_classifier_model(FINE_CLASSIFIER_MODEL_LEARNING_RATE)
+
+    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
+    log_dir = os.path.join(LOG_DIR, current_time)
+    tensorboard = TensorBoard(
+        log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
+    )
+
+    filepath = FINE_CLASSIFIER_MODEL_WEIGHTS_PATH.format(str(class_idx))
+    checkpoint = ModelCheckpoint(
+        filepath=filepath,
+        save_weights_only=True,
+        save_best_only=True,
+    )
+
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        initial_epoch=initial_epoch,
+        epochs=epochs,
+        callbacks=[tensorboard, checkpoint],
+    )
+
+    return history
 
 
 def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
@@ -353,6 +343,28 @@ if __name__ == "__main__":
     if os.path.exists(WEIGHTS_DIR) == False:
         os.mkdir(WEIGHTS_DIR)
 
-    train_single_classifier(initial_epoch=0, epochs=50)
-    train_coarse_classifier(initial_epoch=50, epochs=100)
-    train_fine_classifier(initial_epoch=0, epochs=50)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--train", type=str, required=True)
+    args = parser.parse_args()
+
+    if args.train == "single_layer":
+        train_single_classifier(initial_epoch=0, epochs=50)
+    elif args.train == "coarse_layer":
+        train_coarse_classifier(initial_epoch=50, epochs=100)
+    elif args.train == "fine_layer":
+        initial_epoch = 0
+        epochs = 50
+        historys = []
+
+        for i in range(COARSE_CLASS_NUM):
+            history = train_fine_classifier(
+                initial_epoch=initial_epoch, epochs=epochs, class_idx=i
+            )
+            historys.append(history)
+
+        save_train_fine_model_chart(
+            historys,
+            os.path.join(WORKING_DIR, "fine_classifier_train_chart.png"),
+            initial_epoch,
+            epochs,
+        )
