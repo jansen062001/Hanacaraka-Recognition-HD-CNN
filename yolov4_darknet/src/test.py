@@ -4,7 +4,7 @@ import shutil
 import uuid
 import cv2
 
-from config import *
+from .config import *
 
 
 def create_cfg_test_file(cfg_filename):

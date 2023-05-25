@@ -3,7 +3,7 @@ import glob
 import shutil
 import random
 
-from config import *
+from .config import *
 
 
 def make_train_dir():

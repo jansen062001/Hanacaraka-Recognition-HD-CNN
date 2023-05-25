@@ -14,7 +14,7 @@ from keras.models import Model
 from keras import optimizers
 from keras.regularizers import L2
 
-from config import *
+from .config import *
 
 
 def single_classifier_model(

@@ -5,8 +5,8 @@ import time
 import numpy as np
 import argparse
 
-from model import *
-from config import *
+from .model import *
+from .config import *
 
 
 def save_chart(history, path, initial_epoch, epochs):
