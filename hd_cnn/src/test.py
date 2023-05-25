@@ -4,8 +4,21 @@ import os
 import numpy as np
 import uuid
 
-from train import get_probabilistic_averaging_result
-from config import *
+from .train import get_probabilistic_averaging_result
+from .config import *
+
+
+def get_fine_class_name(class_idx):
+    with open(os.path.join(DATA_DIR, "fine_classes.txt"), "r") as f:
+        idx = 0
+
+        for line in f.readlines():
+            if str(idx) != str(class_idx):
+                idx += 1
+                continue
+
+            class_name = line.strip()
+            return class_name
 
 
 def run_test(arr_img):
@@ -16,8 +29,9 @@ def run_test(arr_img):
 
     proba = get_probabilistic_averaging_result(x)
     predicted = np.argmax(proba)
+    label = get_fine_class_name(predicted)
 
-    return predicted
+    return label
 
 
 if __name__ == "__main__":
