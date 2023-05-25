@@ -1,5 +1,11 @@
 import os
 
+HD_CNN_IMG_WIDTH = 32
+HD_CNN_IMG_HEIGHT = 32
+HD_CNN_IMG_CHANNEL = 3  # grayscale
+COARSE_CLASS_NUM = 24
+FINE_CLASS_NUM = 1443
+
 WORKING_DIR = os.path.abspath(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 )

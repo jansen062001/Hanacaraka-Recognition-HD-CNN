@@ -2,7 +2,7 @@ import os
 import glob
 import shutil
 
-from config import *
+from yolov4_darknet.src import config as yolo_config
 
 
 def get_coarse_class_name(class_id, classes_txt_path):
@@ -24,7 +24,7 @@ def get_coarse_class_name(class_id, classes_txt_path):
 current_file_path = os.path.dirname(os.path.abspath(__file__))
 yolo_dataset_dir = os.path.join(current_file_path, "yolov4_darknet", "dataset")
 raw_yolo_dataset_dir = os.path.join(current_file_path, "dataset", "yolov4_darknet")
-ext = YOLO_IMG_DATASET_EXT
+ext = yolo_config.YOLO_IMG_DATASET_EXT
 class_list = []
 classes_txt_path = os.path.join(raw_yolo_dataset_dir, "classes.txt")
 

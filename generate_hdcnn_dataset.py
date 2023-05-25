@@ -2,7 +2,8 @@ import os
 import glob
 import cv2
 
-from config import *
+from hd_cnn.src import config as hd_cnn_config
+from yolov4_darknet.src import config as yolo_config
 
 
 def crop_img(img, x_center, y_center, w, h):
@@ -39,7 +40,7 @@ def get_class_name(class_id, classes_txt_path):
 current_file_path = os.path.dirname(os.path.abspath(__file__))
 raw_hdcnn_dataset_dir = os.path.join(current_file_path, "dataset", "hd_cnn")
 hdcnn_dataset_dir = os.path.join(current_file_path, "hd_cnn", "dataset")
-ext = YOLO_IMG_DATASET_EXT
+ext = yolo_config.YOLO_IMG_DATASET_EXT
 classes_txt_path = os.path.join(raw_hdcnn_dataset_dir, "classes.txt")
 coarse_dir = os.path.join(hdcnn_dataset_dir, "coarse")
 fine_dir = os.path.join(hdcnn_dataset_dir, "fine")
@@ -68,7 +69,8 @@ for ext in ext:
 
                 cropped_img = crop_img(img, x_center, y_center, w, h)
                 resized_img = cv2.resize(
-                    cropped_img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT)
+                    cropped_img,
+                    (hd_cnn_config.HD_CNN_IMG_WIDTH, hd_cnn_config.HD_CNN_IMG_HEIGHT),
                 )
 
                 class_name = get_class_name(class_id, classes_txt_path)

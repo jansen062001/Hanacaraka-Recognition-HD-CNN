@@ -5,7 +5,6 @@ import numpy as np
 import uuid
 
 from train import get_probabilistic_averaging_result
-from .config import *
 from config import *
 
 

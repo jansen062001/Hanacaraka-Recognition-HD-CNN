@@ -1,12 +1,11 @@
 import tensorflow as tf
 import matplotlib.pyplot as plt
-from model import *
 from keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 import numpy as np
 import tensorflow_datasets as tfds
 
-from .config import *
+from model import *
 from config import *
 
 
