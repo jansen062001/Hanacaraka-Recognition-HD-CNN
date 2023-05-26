@@ -18,7 +18,8 @@ def get_fine_class_name(class_idx):
                 continue
 
             class_name = line.strip()
-            return class_name
+            fine_class_name = class_name.split("_")[1]
+            return fine_class_name
 
 
 def run_test(arr_img):
