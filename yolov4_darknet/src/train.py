@@ -12,27 +12,35 @@ def make_train_dir():
 
 
 def build_darknet():
-    os.chdir(WORKING_DIR)
+    if os.path.exists(DARKNET_DIR) == False:
+        os.mkdir(DARKNET_DIR)
 
-    cmd = "git clone https://github.com/AlexeyAB/darknet.git"
-    os.system(cmd)
+    cmd = "git clone https://github.com/AlexeyAB/darknet.git {}"
+    os.system(cmd.format(DARKNET_DIR))
 
     os.chdir(DARKNET_DIR)
-
+    makefile_path = os.path.join(DARKNET_DIR, "Makefile")
     cmd = (
-        'sed -i "s/OPENCV=0/OPENCV=1/" Makefile;'
-        + 'sed -i "s/GPU=0/GPU=1/" Makefile;'
-        + 'sed -i "s/CUDNN=0/CUDNN=1/" Makefile;'
-        + 'sed -i "s/CUDNN_HALF=0/CUDNN_HALF=1/" Makefile;'
-        + 'sed -i "s/ARCH= -gencode arch=compute_35,code=sm_35/ARCH= '
-        + YOLO_ARCH
-        + '/" Makefile;'
+        'sed -i "s/OPENCV=0/OPENCV=1/" {};'
+        + 'sed -i "s/GPU=0/GPU=1/" {};'
+        + 'sed -i "s/CUDNN=0/CUDNN=1/" {};'
+        + 'sed -i "s/CUDNN_HALF=0/CUDNN_HALF=1/" {};'
+        + 'sed -i "s/ARCH= -gencode arch=compute_35,code=sm_35/ARCH= {}/" {};'
         + "make"
     )
-    os.system(cmd)
+    os.system(
+        cmd.format(
+            makefile_path,
+            makefile_path,
+            makefile_path,
+            makefile_path,
+            YOLO_ARCH,
+            makefile_path,
+        )
+    )
 
-    cmd = "wget " + YOLO_PRETRAINED_WEIGHTS_URL
-    os.system(cmd)
+    cmd = "wget -P {} {}"
+    os.system(cmd.format(DARKNET_DIR, YOLO_PRETRAINED_WEIGHTS_URL))
 
 
 def move_dataset_folder():
@@ -124,16 +132,18 @@ def check_train_test_data():
 
 
 def run_training():
+    darknet_exe_path = os.path.join(DARKNET_DIR, "darknet")
     os.chdir(DARKNET_DIR)
 
-    cmd = (
-        "./darknet detector train data/obj.data cfg/"
-        + YOLO_CFG_FILENAME
-        + " "
-        + YOLO_PRETRAINED_WEIGHTS_NAME
-        + " -dont_show -map"
+    cmd = "{} detector train {} {} {} -dont_show -map"
+    os.system(
+        cmd.format(
+            darknet_exe_path,
+            os.path.join(DARKNET_DIR, "data", "obj.data"),
+            os.path.join(DARKNET_DIR, "cfg", YOLO_CFG_FILENAME),
+            os.path.join(DARKNET_DIR, YOLO_PRETRAINED_WEIGHTS_NAME),
+        )
     )
-    os.system(cmd)
 
 
 if __name__ == "__main__":
