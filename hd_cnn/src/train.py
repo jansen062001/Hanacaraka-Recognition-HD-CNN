@@ -354,17 +354,17 @@ if __name__ == "__main__":
     elif args.train == "fine_layer":
         initial_epoch = 0
         epochs = 50
-        historys = []
 
         for i in range(COARSE_CLASS_NUM):
             history = train_fine_classifier(
                 initial_epoch=initial_epoch, epochs=epochs, class_idx=i
             )
-            historys.append(history)
 
-        save_train_fine_model_chart(
-            historys,
-            os.path.join(WORKING_DIR, "fine_classifier_train_chart.png"),
-            initial_epoch,
-            epochs,
-        )
+            save_chart(
+                history,
+                os.path.join(
+                    WORKING_DIR, "fine_classifier_{}_train_chart.png".format(str(i))
+                ),
+                initial_epoch,
+                epochs,
+            )
