@@ -13,6 +13,7 @@ from keras.layers import (
 from keras.models import Model
 from keras import optimizers
 from keras.regularizers import L2
+import tensorflow as tf
 
 from .config import *
 
@@ -162,63 +163,24 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
     return fine_model
 
 
-def vgg16_model(learning_rate, dropout_rate):
+def vgg16_model(learning_rate):
     # input
-    input = Input(
-        shape=(
-            HD_CNN_IMG_WIDTH,
-            HD_CNN_IMG_HEIGHT,
-            HD_CNN_IMG_CHANNEL,
-        )
+    input = Input(shape=(224, 224, 3))
+
+    base_model = tf.keras.applications.vgg16.VGG16(
+        weights=None, input_tensor=input, include_top=False
     )
 
-    x = BatchNormalization()(input)
-    x = GaussianNoise(0.01)(x)
-
-    # 1st Conv Block
-    x = Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=64, kernel_size=3, padding="same", activation="relu")(x)
-    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
-
-    # 2nd Conv Block
-    x = Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=128, kernel_size=3, padding="same", activation="relu")(x)
-    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
-
-    # 3rd Conv block
-    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=256, kernel_size=3, padding="same", activation="relu")(x)
-    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
-
-    # 4th Conv block
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = MaxPool2D(pool_size=2, strides=2, padding="same")(x)
-
-    # 5th Conv block
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = Conv2D(filters=512, kernel_size=3, padding="same", activation="relu")(x)
-    x = MaxPool2D(pool_size=3, strides=3, padding="same")(x)
-
     # Fully connected layers
-    flatten = Flatten()(x)
+    flatten = Flatten()(base_model.output)
     fc = Dense(
-        units=2048,
+        units=4096,
         activation="relu",
-        kernel_regularizer=L2(0.001),
-        bias_regularizer=L2(0.001),
     )(flatten)
-    fc = Dropout(dropout_rate)(fc)
     fc = Dense(
-        units=2048,
+        units=4096,
         activation="relu",
-        kernel_regularizer=L2(0.001),
-        bias_regularizer=L2(0.001),
     )(fc)
-    fc = Dropout(dropout_rate)(fc)
     output = Dense(FINE_CLASS_NUM, activation="softmax")(fc)
 
     # creating the model

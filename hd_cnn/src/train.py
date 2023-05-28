@@ -247,7 +247,7 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
         validation_split=validation_split,
         subset="training",
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(224, 224),
         batch_size=batch_size,
         label_mode="categorical",
     )
@@ -257,12 +257,12 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
         validation_split=validation_split,
         subset="validation",
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(224, 224),
         batch_size=batch_size,
         label_mode="categorical",
     )
 
-    model = vgg16_model(learning_rate=0.0001, dropout_rate=0.5)
+    model = vgg16_model(learning_rate=0.001)
 
     current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
     log_dir = os.path.join(LOG_DIR, current_time)
@@ -286,7 +286,7 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
 
     save_chart(
         history,
-        os.path.join(WORKING_DIR, "single_classifier_train_chart.png"),
+        os.path.join(WORKING_DIR, "vgg16_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -370,3 +370,10 @@ if __name__ == "__main__":
                 initial_epoch,
                 epochs,
             )
+    elif args.train == "vgg16":
+        train_vgg16(
+            initial_epoch=0,
+            epochs=50,
+            batch_size=BATCH_SIZE,
+            validation_split=VALIDATION_SPLIT,
+        )
