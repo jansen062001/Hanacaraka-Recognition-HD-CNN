@@ -32,6 +32,8 @@ def save_chart(history, path, initial_epoch, epochs):
     plt.title("Training and Validation Loss")
     plt.savefig(path)
 
+    plt.close()
+
 
 def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     epochs_range = range(initial_epoch, epochs)
