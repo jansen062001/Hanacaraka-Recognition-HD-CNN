@@ -247,7 +247,7 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
         validation_split=validation_split,
         subset="training",
         seed=123,
-        image_size=(224, 224),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )
@@ -257,7 +257,7 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
         validation_split=validation_split,
         subset="validation",
         seed=123,
-        image_size=(224, 224),
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )

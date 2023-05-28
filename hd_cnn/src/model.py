@@ -165,7 +165,7 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
 
 def vgg16_model(learning_rate):
     # input
-    input = Input(shape=(224, 224, 3))
+    input = Input(shape=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT, HD_CNN_IMG_CHANNEL))
 
     base_model = tf.keras.applications.vgg16.VGG16(
         weights=None, input_tensor=input, include_top=False
