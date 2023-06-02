@@ -193,3 +193,35 @@ def vgg16_model(learning_rate):
     )
 
     return model
+
+
+def vgg19_model(learning_rate):
+    # input
+    input = Input(shape=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT, HD_CNN_IMG_CHANNEL))
+
+    base_model = tf.keras.applications.vgg19.VGG19(
+        weights=None, input_tensor=input, include_top=False
+    )
+
+    # Fully connected layers
+    flatten = Flatten()(base_model.output)
+    fc = Dense(
+        units=4096,
+        activation="relu",
+    )(flatten)
+    fc = Dense(
+        units=4096,
+        activation="relu",
+    )(fc)
+    output = Dense(FINE_CLASS_NUM, activation="softmax")(fc)
+
+    # creating the model
+    model = Model(inputs=input, outputs=output)
+    optimizer = optimizers.Adam(learning_rate)
+    model.compile(
+        optimizer=optimizer,
+        loss="categorical_crossentropy",
+        metrics=["categorical_accuracy"],
+    )
+
+    return model

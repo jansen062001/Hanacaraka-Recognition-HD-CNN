@@ -292,6 +292,57 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
     )
 
 
+def train_vgg19(initial_epoch, epochs, batch_size, validation_split):
+    train_ds = tf.keras.utils.image_dataset_from_directory(
+        FINE_DIR,
+        validation_split=validation_split,
+        subset="training",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=batch_size,
+        label_mode="categorical",
+    )
+
+    val_ds = tf.keras.utils.image_dataset_from_directory(
+        FINE_DIR,
+        validation_split=validation_split,
+        subset="validation",
+        seed=123,
+        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        batch_size=batch_size,
+        label_mode="categorical",
+    )
+
+    model = vgg19_model(learning_rate=0.001)
+
+    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
+    log_dir = os.path.join(LOG_DIR, current_time)
+    tensorboard = TensorBoard(
+        log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
+    )
+
+    checkpoint = ModelCheckpoint(
+        filepath=os.path.join(WEIGHTS_DIR, "vgg19_model", "cp.ckpt"),
+        save_weights_only=True,
+        save_best_only=True,
+    )
+
+    history = model.fit(
+        train_ds,
+        validation_data=val_ds,
+        initial_epoch=initial_epoch,
+        epochs=epochs,
+        callbacks=[tensorboard, checkpoint],
+    )
+
+    save_chart(
+        history,
+        os.path.join(WORKING_DIR, "vgg19_train_chart.png"),
+        initial_epoch,
+        epochs,
+    )
+
+
 def get_error(y, yh):
     # Threshold
     yht = np.zeros(np.shape(yh))
@@ -377,10 +428,17 @@ if __name__ == "__main__":
                 initial_epoch,
                 epochs,
             )
-    elif args.train == "vgg16":
+    elif args.train == "vgg16":  # Benchmark
         train_vgg16(
             initial_epoch=0,
-            epochs=50,
+            epochs=100,
+            batch_size=BATCH_SIZE,
+            validation_split=VALIDATION_SPLIT,
+        )
+    elif args.train == "vgg19":  # Benchmark
+        train_vgg19(
+            initial_epoch=0,
+            epochs=100,
             batch_size=BATCH_SIZE,
             validation_split=VALIDATION_SPLIT,
         )
