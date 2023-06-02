@@ -309,21 +309,28 @@ def get_probabilistic_averaging_result(x_test):
     coarse_layer = coarse_classifier_model(
         COARSE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True
     )
-    for x in x_test:
-        prediction = coarse_layer.predict(tf.expand_dims(x, 0))
-        coarse_predictions.append(prediction[0])
+    predictions = coarse_layer.predict(x_test, batch_size=1)
+    for i in range(len(predictions)):
+        coarse_predictions.append(predictions[i])
 
+    coarse_idx = []
     for i in range(COARSE_CLASS_NUM):
+        coarse_idx.append(str(i))
+    coarse_idx.sort()
+    for i in range(len(coarse_idx)):
+        coarse_idx[i] = int(coarse_idx[i])
+
+    for i in coarse_idx:
         fine_layer = fine_classifier_model(
             FINE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True, class_idx=i
         )
-        predictions = []
 
-        for x in x_test:
-            prediction = fine_layer.predict(tf.expand_dims(x, 0))
-            predictions.append(prediction[0])
+        arr_predictions = []
+        predictions = fine_layer.predict(x_test, batch_size=1)
+        for j in range(len(predictions)):
+            arr_predictions.append(predictions[j])
 
-        fine_predictions.append(predictions)
+        fine_predictions.append(arr_predictions)
 
     prediction_size = len(coarse_predictions)
     for img in range(prediction_size):
