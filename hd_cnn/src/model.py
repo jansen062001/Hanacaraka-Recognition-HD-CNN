@@ -127,9 +127,9 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
         HD_CNN_IMG_CHANNEL,
         FINE_CLASS_NUM,
     )
-    # model.load_weights(SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH)
-    # for i in range(len(model.layers)):
-    #     model.layers[i].trainable = False
+    model.load_weights(SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH)
+    for i in range(len(model.layers)):
+        model.layers[i].trainable = False
 
     net = Conv2D(1024, 1, strides=1, padding="same", activation="elu")(
         model.layers[-8].output
@@ -152,8 +152,8 @@ def fine_classifier_model(learning_rate, load_weight=False, class_idx=-1):
         metrics=["categorical_accuracy"],
     )
 
-    # for i in range(len(fine_model.layers) - 1):
-    #     fine_model.layers[i].set_weights(model.layers[i].get_weights())
+    for i in range(len(fine_model.layers) - 1):
+        fine_model.layers[i].set_weights(model.layers[i].get_weights())
 
     if load_weight:
         fine_model.load_weights(
