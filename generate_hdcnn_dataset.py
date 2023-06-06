@@ -1,6 +1,7 @@
 import os
 import glob
 import cv2
+import operator
 
 from hd_cnn.src import config as hd_cnn_config
 from yolov4_darknet.src import config as yolo_config
@@ -119,8 +120,19 @@ for i in range(len(coarse_class)):
             os.mkdir(path)
 
 with open(os.path.join(hdcnn_dataset_dir, "coarse_classes.txt"), "w") as f:
-    for class_name in coarse_class:
-        f.write(class_name + "\n")
+    coarse_class_dict = []
+    for i in range(len(coarse_class)):
+        coarse_class_dict.append({"idx": str(i), "class_name": coarse_class[i]})
+    coarse_class_dict.sort(key=operator.itemgetter("idx"))
+
+    for i in range(len(coarse_class_dict)):
+        f.write(coarse_class_dict[i]["class_name"] + "\n")
+
 with open(os.path.join(hdcnn_dataset_dir, "fine_classes.txt"), "w") as f:
-    for class_name in fine_class:
-        f.write(class_name + "\n")
+    fine_class_dict = []
+    for i in range(len(fine_class)):
+        fine_class_dict.append({"idx": str(i), "class_name": fine_class[i]})
+    fine_class_dict.sort(key=operator.itemgetter("idx"))
+
+    for i in range(len(fine_class_dict)):
+        f.write(fine_class_dict[i]["class_name"] + "\n")
