@@ -20,6 +20,7 @@ Image recognition for Javanese script using YOLOv4 Darknet and HD-CNN. This proj
   - [Training and Testing YOLOv4 Darknet](#training-and-testing-yolov4-darknet)
   - [Training and Testing HD-CNN](#training-and-testing-hd-cnn)
   - [Run YOLOv4 + HD-CNN](#run-yolov4--hd-cnn)
+- [Acknowledgements](#acknowledgements)
 
 # Usage
 
@@ -113,3 +114,14 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
    python main.py --filename=example.jpg
    ```
 - After the process complete, there is a file called `result.jpg` in the directory `./` as the final output
+
+# Acknowledgements
+
+<details>
+  <summary><b>Expand</b></summary>
+  
+  - [https://github.com/AlexeyAB/darknet](https://github.com/AlexeyAB/darknet)
+  - [https://github.com/slanj/yolo-tiling](https://github.com/slanj/yolo-tiling)
+  - [https://github.com/justinessert/hierarchical-deep-cnn](https://github.com/justinessert/hierarchical-deep-cnn)
+  - [https://github.com/satyatumati/Hierarchical-Deep-CNN](https://github.com/satyatumati/Hierarchical-Deep-CNN)
+</details>
