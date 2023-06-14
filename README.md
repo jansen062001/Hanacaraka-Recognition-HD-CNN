@@ -67,6 +67,8 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
       python -m src.test --width=416 --height=416 --filename=example.jpg
       ```
 
+      There is a file called `output_example.jpg` in the directory `./yolov4_darknet/test_images/` as the output
+
 ## Training and Testing HD-CNN
 
 1. Preparing The Dataset
@@ -113,7 +115,7 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
    cd ./
    python main.py --filename=example.jpg
    ```
-- After the process complete, there is a file called `result.jpg` in the directory `./` as the final output
+- After the process is complete, there is a file called `result.jpg` in the directory `./` as the final output
 
 # Acknowledgements
 
