@@ -22,17 +22,23 @@ def get_fine_class_name(class_idx):
             return fine_class_name
 
 
-def run_test(arr_img):
-    resized_img = cv2.resize(arr_img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT))
+def run_test(imgs):
     x = []
-    x.append(resized_img)
+    for img in imgs:
+        resized_img = cv2.resize(img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT))
+        x.append(resized_img)
     x = np.array(x)
 
     proba = get_probabilistic_averaging_result(x)
-    predicted = np.argmax(proba)
-    label = get_fine_class_name(predicted)
 
-    return label
+    labels = []
+    for i in range(len(proba)):
+        predicted = np.argmax(proba[i])
+        label = get_fine_class_name(predicted)
+
+        labels.append(label)
+
+    return labels
 
 
 if __name__ == "__main__":
@@ -50,7 +56,7 @@ if __name__ == "__main__":
 
     img = cv2.imread(tmp_img_path)
 
-    prediction_result = run_test(img)
-    print(prediction_result)
+    prediction_result = run_test([img])
+    print(prediction_result[0])
 
     os.remove(tmp_img_path)

@@ -4,6 +4,7 @@ import os
 import numpy as np
 from typing import Tuple
 import uuid
+import time
 
 from hd_cnn.src import test as hd_cnn_test
 from yolov4_darknet.src import config as yolo_config
@@ -26,8 +27,8 @@ def draw_bounding_box(img, list_bb_and_label):
             bounding_box["label"],
             (int(x0), int(y0) - 2),
             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=0.3,
-            color=(255, 255, 255),
+            fontScale=0.4,
+            color=(0, 255, 0),
             thickness=1,
         )
 
@@ -62,6 +63,8 @@ def resize_with_pad(
 
 
 if __name__ == "__main__":
+    start_time = time.time()
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--filename", type=str, required=True)
     args = parser.parse_args()
@@ -166,6 +169,7 @@ if __name__ == "__main__":
     gray_3_ch[:, :, 1] = new_img
     gray_3_ch[:, :, 2] = new_img
 
+    x = []
     for i in range(len(list_bb_and_label)):
         top_y = list_bb_and_label[i]["top_y"]
         left_x = list_bb_and_label[i]["left_x"]
@@ -173,8 +177,16 @@ if __name__ == "__main__":
         height = list_bb_and_label[i]["height"]
         predicted_img = gray_3_ch[top_y : top_y + height, left_x : left_x + width, :]
 
-        predicted_label = hd_cnn_test.run_test(predicted_img)
-        list_bb_and_label[i]["label"] = predicted_label
+        x.append(predicted_img)
 
-    img_with_bb = draw_bounding_box(new_img, list_bb_and_label)
+    y = hd_cnn_test.run_test(x)
+    for i in range(len(list_bb_and_label)):
+        list_bb_and_label[i]["label"] = y[i]
+
+    img_with_bb = resize_with_pad(img, (resize_to, resize_to), (114, 114, 114))
+    img_with_bb = draw_bounding_box(img_with_bb, list_bb_and_label)
     cv2.imwrite("result.jpg", img_with_bb)
+
+    end_time = time.time()
+    elapsed = end_time - start_time
+    print("Elapsed time is %f seconds." % elapsed)
