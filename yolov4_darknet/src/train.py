@@ -111,7 +111,7 @@ def split_train_valid():
 
 
 def move_cfg_file():
-    shutil.move(
+    shutil.copyfile(
         os.path.join(WORKING_DIR, YOLO_CFG_FILENAME),
         os.path.join(DARKNET_DIR, "cfg", YOLO_CFG_FILENAME),
     )
