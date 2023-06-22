@@ -1,6 +1,8 @@
 import os
 
 YOLO_IMG_SIZE = 416
+YOLO_BATCH = 64
+YOLO_SUBDIVISIONS = 4
 YOLO_PRETRAINED_WEIGHTS_URL = "https://github.com/AlexeyAB/darknet/releases/download/darknet_yolo_v4_pre/yolov4-tiny.conv.29"
 YOLO_PRETRAINED_WEIGHTS_NAME = "yolov4-tiny.conv.29"
 YOLO_NUMBER_OF_CLASSES = 24

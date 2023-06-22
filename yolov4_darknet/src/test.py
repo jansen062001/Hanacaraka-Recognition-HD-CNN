@@ -17,22 +17,21 @@ def create_cfg_test_file(cfg_filename, width, height):
     )
 
     cmd = (
-        'sed -i "s/batch=64/batch=1/" '
-        + test_cfg_path
-        + ";"
-        + 'sed -i "s/subdivisions=2/subdivisions=1/" '
-        + test_cfg_path
-        + ";"
-        + 'sed -i "s/width=416/width='
-        + str(width)
-        + '/" '
-        + test_cfg_path
-        + ";"
-        + 'sed -i "s/height=416/height='
-        + str(height)
-        + '/" '
-        + test_cfg_path
-        + ";"
+        'sed -i "s/batch={batch}/batch={new_batch}/" {cfg_path};'
+        + 'sed -i "s/subdivisions={subdivisions}/subdivisions={new_subdivisions}/" {cfg_path};'
+        + 'sed -i "s/width={width}/width={new_width}/" {cfg_path};'
+        + 'sed -i "s/height={height}/height={new_height}/" {cfg_path};'
+    )
+    cmd = cmd.format(
+        cfg_path=test_cfg_path,
+        batch=YOLO_BATCH,
+        new_batch=1,
+        subdivisions=YOLO_SUBDIVISIONS,
+        new_subdivisions=1,
+        width=YOLO_IMG_SIZE,
+        new_width=width,
+        height=YOLO_IMG_SIZE,
+        new_height=height,
     )
     os.system(cmd)
 
