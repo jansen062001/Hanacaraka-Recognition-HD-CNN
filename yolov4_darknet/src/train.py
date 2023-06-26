@@ -89,13 +89,17 @@ def split_train_valid():
         ):
             dataset.append(path_and_filename)
 
+    test_data_amount = int(len(dataset) * YOLO_PERCENTAGE_TEST / 100)
     while True:
+        if test_data_amount <= 0:
+            break
+
         random_idx = random.randint(0, len(dataset) - 1)
 
         if random_idx not in test_data_idx:
             test_data_idx.append(random_idx)
 
-        if len(test_data_idx) == int(len(dataset) * YOLO_PERCENTAGE_TEST / 100):
+        if len(test_data_idx) == test_data_amount:
             break
 
     for i in range(len(dataset)):
