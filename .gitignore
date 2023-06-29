@@ -10,9 +10,13 @@ yolov4_darknet/darknet/
 yolov4_darknet/training/
 yolov4_darknet/test_images/*
 !yolov4_darknet/test_images/.gitkeep
+yolov4_darknet/dataset/*
+!yolov4_darknet/dataset/.gitkeep
 
 hd_cnn/log/
 hd_cnn/weights/
 hd_cnn/*.png
 hd_cnn/test_img/*
 !hd_cnn/test_img/.gitkeep
+hd_cnn/dataset/*
+!hd_cnn/dataset/.gitkeep
