@@ -1,1 +1,9 @@
 .vscode
+__pycache__
+
+yolov4_darknet/darknet/
+yolov4_darknet/training/
+
+hd_cnn/log/
+hd_cnn/weights/
+hd_cnn/*.png
