@@ -16,6 +16,7 @@ yolov4_darknet/dataset/*
 hd_cnn/log/
 hd_cnn/weights/
 hd_cnn/*.png
+hd_cnn/*.txt
 hd_cnn/test_img/*
 !hd_cnn/test_img/.gitkeep
 hd_cnn/dataset/*
