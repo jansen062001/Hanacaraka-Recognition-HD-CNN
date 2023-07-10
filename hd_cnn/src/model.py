@@ -1,18 +1,6 @@
-from keras.layers import (
-    Input,
-    Conv2D,
-    Dropout,
-    MaxPooling2D,
-    Flatten,
-    Dense,
-    Rescaling,
-    BatchNormalization,
-    GaussianNoise,
-    MaxPool2D,
-)
+from keras.layers import Input, Conv2D, Dropout, MaxPooling2D, Flatten, Dense, Rescaling
 from keras.models import Model
 from keras import optimizers
-from keras.regularizers import L2
 import tensorflow as tf
 
 from .config import *
