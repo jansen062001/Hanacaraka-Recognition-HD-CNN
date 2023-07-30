@@ -99,11 +99,6 @@ def split_dataset(x, y, train_size, valid_size, test_size):
     valid_size /= 100
     test_size /= 100
 
-    # x_test, x_train_valid, y_test, y_train_valid = train_test_split(
-    #     x, y, stratify=y, random_state=42, test_size=1 - test_size
-    # )
-    # x_val, x_train, y_val, y_train = train_test_split(x_train_valid, y_train_valid)
-
     x_train, x_val_test, y_train, y_val_test = train_test_split(
         x, y, stratify=y, random_state=42, test_size=1 - train_size
     )
@@ -114,13 +109,6 @@ def split_dataset(x, y, train_size, valid_size, test_size):
         random_state=42,
         test_size=test_size / (test_size + valid_size),
     )
-
-    # x_train, x_test, y_train, y_test = train_test_split(
-    #     x, y, stratify=y, test_size=1 - train_size, random_state=42
-    # )
-    # x_val, x_test, y_val, y_test = train_test_split(
-    #     x_test, y_test, test_size=test_size / (test_size + valid_size), random_state=42
-    # )
 
     return x_train, x_val, x_test, y_train, y_val, y_test
 
