@@ -88,9 +88,7 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
 
 def train_single_classifier(initial_epoch, epochs):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=VALIDATION_SPLIT,
-        subset="training",
+        os.path.join(TRAIN_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -98,9 +96,7 @@ def train_single_classifier(initial_epoch, epochs):
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=VALIDATION_SPLIT,
-        subset="validation",
+        os.path.join(VALID_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -137,7 +133,7 @@ def train_single_classifier(initial_epoch, epochs):
 
     save_chart(
         history,
-        os.path.join(WORKING_DIR, "single_classifier_train_chart.png"),
+        os.path.join(HD_CNN_DIR, "data", "single_classifier_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -145,9 +141,7 @@ def train_single_classifier(initial_epoch, epochs):
 
 def train_coarse_classifier(initial_epoch, epochs):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        COARSE_DIR,
-        validation_split=VALIDATION_SPLIT,
-        subset="training",
+        os.path.join(TRAIN_DATASET_DIR, "coarse"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -155,9 +149,7 @@ def train_coarse_classifier(initial_epoch, epochs):
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        COARSE_DIR,
-        validation_split=VALIDATION_SPLIT,
-        subset="validation",
+        os.path.join(VALID_DATASET_DIR, "coarse"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -188,7 +180,7 @@ def train_coarse_classifier(initial_epoch, epochs):
 
     save_chart(
         history,
-        os.path.join(WORKING_DIR, "coarse_classifier_train_chart.png"),
+        os.path.join(HD_CNN_DIR, "data", "coarse_classifier_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -196,9 +188,7 @@ def train_coarse_classifier(initial_epoch, epochs):
 
 def train_fine_classifier(initial_epoch, epochs, class_idx):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(COARSE_FINE_DIR, str(class_idx)),
-        validation_split=VALIDATION_SPLIT,
-        subset="training",
+        os.path.join(TRAIN_DATASET_DIR, "coarse_fine", str(class_idx)),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -206,9 +196,7 @@ def train_fine_classifier(initial_epoch, epochs, class_idx):
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(COARSE_FINE_DIR, str(class_idx)),
-        validation_split=VALIDATION_SPLIT,
-        subset="validation",
+        os.path.join(VALID_DATASET_DIR, "coarse_fine", str(class_idx)),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=BATCH_SIZE,
@@ -241,11 +229,9 @@ def train_fine_classifier(initial_epoch, epochs, class_idx):
     return history
 
 
-def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
+def train_vgg16(initial_epoch, epochs, batch_size):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=validation_split,
-        subset="training",
+        os.path.join(TRAIN_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
@@ -253,9 +239,7 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=validation_split,
-        subset="validation",
+        os.path.join(VALID_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
@@ -286,17 +270,15 @@ def train_vgg16(initial_epoch, epochs, batch_size, validation_split):
 
     save_chart(
         history,
-        os.path.join(WORKING_DIR, "vgg16_train_chart.png"),
+        os.path.join(HD_CNN_DIR, "data", "vgg16_train_chart.png"),
         initial_epoch,
         epochs,
     )
 
 
-def train_vgg19(initial_epoch, epochs, batch_size, validation_split):
+def train_vgg19(initial_epoch, epochs, batch_size):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=validation_split,
-        subset="training",
+        os.path.join(TRAIN_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
@@ -304,9 +286,7 @@ def train_vgg19(initial_epoch, epochs, batch_size, validation_split):
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        FINE_DIR,
-        validation_split=validation_split,
-        subset="validation",
+        os.path.join(VALID_DATASET_DIR, "fine"),
         seed=123,
         image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
@@ -337,7 +317,7 @@ def train_vgg19(initial_epoch, epochs, batch_size, validation_split):
 
     save_chart(
         history,
-        os.path.join(WORKING_DIR, "vgg19_train_chart.png"),
+        os.path.join(HD_CNN_DIR, "data", "vgg19_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -347,8 +327,10 @@ def get_error(y, yh):
     # Threshold
     yht = np.zeros(np.shape(yh))
     yht[np.arange(len(yh)), yh.argmax(1)] = 1
+
     # Evaluate Error
     error = np.count_nonzero(np.count_nonzero(y - yht, 1)) / len(y)
+
     return error
 
 
@@ -397,48 +379,50 @@ def get_probabilistic_averaging_result(x_test):
     return np.array(final_predictions)
 
 
-if __name__ == "__main__":
-    if os.path.exists(LOG_DIR) == False:
+def main(args):
+    if not os.path.exists(LOG_DIR):
         os.mkdir(LOG_DIR)
-    if os.path.exists(WEIGHTS_DIR) == False:
+    if not os.path.exists(WEIGHTS_DIR):
         os.mkdir(WEIGHTS_DIR)
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--train", type=str, required=True)
-    args = parser.parse_args()
-
-    if args.train == "single_layer":
+    if args.model == "hd_cnn":
         train_single_classifier(initial_epoch=0, epochs=50)
-    elif args.train == "coarse_layer":
         train_coarse_classifier(initial_epoch=50, epochs=100)
-    elif args.train == "fine_layer":
-        initial_epoch = 0
-        epochs = 50
 
         for i in range(COARSE_CLASS_NUM):
+            initial_epoch = 0
+            epochs = 50
+
             history = train_fine_classifier(
                 initial_epoch=initial_epoch, epochs=epochs, class_idx=i
             )
-
             save_chart(
                 history,
                 os.path.join(
-                    WORKING_DIR, "fine_classifier_{}_train_chart.png".format(str(i))
+                    HD_CNN_DIR,
+                    "data",
+                    "fine_classifier_{}_train_chart.png".format(str(i)),
                 ),
                 initial_epoch,
                 epochs,
             )
-    elif args.train == "vgg16":  # Benchmark
+    elif args.model == "vgg16":  # Benchmark
         train_vgg16(
             initial_epoch=0,
             epochs=100,
             batch_size=BATCH_SIZE,
-            validation_split=VALIDATION_SPLIT,
         )
-    elif args.train == "vgg19":  # Benchmark
+    elif args.model == "vgg19":  # Benchmark
         train_vgg19(
             initial_epoch=0,
             epochs=100,
             batch_size=BATCH_SIZE,
-            validation_split=VALIDATION_SPLIT,
         )
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, required=True)
+    args = parser.parse_args()
+
+    main(args)

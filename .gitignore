@@ -1,23 +1,17 @@
 .vscode
 __pycache__
-
-dataset/hd_cnn/*
-!dataset/hd_cnn/.gitkeep
-dataset/yolov4_darknet/*
-!dataset/yolov4_darknet/.gitkeep
+nohup.out
 
 yolov4_darknet/darknet/
-yolov4_darknet/training/
-yolov4_darknet/test_images/*
-!yolov4_darknet/test_images/.gitkeep
-yolov4_darknet/dataset/*
-!yolov4_darknet/dataset/.gitkeep
+yolov4_darknet/weights/
+yolov4_darknet/data/
+yolov4_darknet/dataset/
 
 hd_cnn/log/
 hd_cnn/weights/
-hd_cnn/*.png
-hd_cnn/*.txt
-hd_cnn/test_img/*
-!hd_cnn/test_img/.gitkeep
-hd_cnn/dataset/*
-!hd_cnn/dataset/.gitkeep
+hd_cnn/data/
+hd_cnn/dataset/
+
+/result.jpg
+
+!.gitkeep

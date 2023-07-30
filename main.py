@@ -6,9 +6,9 @@ from typing import Tuple
 import uuid
 import time
 
-from hd_cnn.src import test as hd_cnn_test
-from yolov4_darknet.src import config as yolo_config
-from yolov4_darknet.src import test as yolo_test
+from hd_cnn import test as hd_cnn_test
+from yolov4_darknet import config as yolo_config
+from yolov4_darknet import test as yolo_test
 
 
 def draw_bounding_box(img, list_bb_and_label):
@@ -91,7 +91,7 @@ if __name__ == "__main__":
                 h : h + yolo_config.YOLO_IMG_SIZE, w : w + yolo_config.YOLO_IMG_SIZE
             ]
 
-            yolo_test_img_dir = os.path.join(yolo_config.WORKING_DIR, "test_images")
+            yolo_test_img_dir = os.path.join(yolo_config.YOLO_DIR, "data")
             filename = uuid.uuid4().hex + ".jpg"
             yolo_test_img_path = os.path.join(yolo_test_img_dir, filename)
             cv2.imwrite(yolo_test_img_path, cropped_img)

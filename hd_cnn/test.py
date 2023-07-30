@@ -9,7 +9,7 @@ from .config import *
 
 
 def get_fine_class_name(class_idx):
-    with open(os.path.join(DATA_DIR, "fine_classes.txt"), "r") as f:
+    with open(FINE_CLASSES_TXT_PATH, "r") as f:
         idx = 0
 
         for line in f.readlines():
@@ -41,17 +41,13 @@ def run_test(imgs):
     return labels
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--filename", type=str, required=True)
-    args = parser.parse_args()
-
+def main(args):
     filename = args.filename
-    img = cv2.imread(os.path.join(WORKING_DIR, "test_img", filename), 0)
+    img = cv2.imread(os.path.join(HD_CNN_DIR, "data", filename), 0)
     img = cv2.resize(img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT))
 
     tmp_img_filename = uuid.uuid4().hex + ".jpg"
-    tmp_img_path = os.path.join(WORKING_DIR, "test_img", tmp_img_filename)
+    tmp_img_path = os.path.join(HD_CNN_DIR, "data", tmp_img_filename)
     cv2.imwrite(tmp_img_path, img)
 
     img = cv2.imread(tmp_img_path)
@@ -60,3 +56,11 @@ if __name__ == "__main__":
     print(prediction_result[0])
 
     os.remove(tmp_img_path)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--filename", type=str, required=True)
+    args = parser.parse_args()
+
+    main(args)

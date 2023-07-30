@@ -36,23 +36,24 @@ def create_cfg_test_file(cfg_filename, width, height):
     os.system(cmd)
 
 
-def detect(cfg_filename, test_img_filename):
-    test_img_dir = os.path.join(WORKING_DIR, "test_images")
+def detect(cfg_filename, img_filename):
+    data_dir = os.path.join(YOLO_DIR, "data")
+    img_path = os.path.join(data_dir, img_filename)
 
-    img = cv2.imread(os.path.join(test_img_dir, test_img_filename), 0)
+    img = cv2.imread(img_path, 0)
     filename = uuid.uuid4().hex + ".jpg"
-    cv2.imwrite(os.path.join(test_img_dir, filename), img)
+    cv2.imwrite(os.path.join(data_dir, filename), img)
 
     os.chdir(DARKNET_DIR)
     cmd = "{} detector test {} {} {} -ext_output -dont_show {} > {}"
     os.system(
         cmd.format(
             os.path.join(DARKNET_DIR, "darknet"),
-            os.path.join(DARKNET_DIR, "data", "obj.data"),
+            DARKNET_OBJ_DATA_PATH,
             os.path.join(DARKNET_DIR, "cfg", cfg_filename),
-            os.path.join(TRAIN_RESULT_DIR, "yolov4-tiny_final.weights"),
-            os.path.join(test_img_dir, filename),
-            os.path.join(test_img_dir, "result.txt"),
+            os.path.join(WEIGHTS_DIR, WEIGHTS_RESULT_FILENAME),
+            os.path.join(data_dir, filename),
+            os.path.join(data_dir, "result.txt"),
         )
     )
 
@@ -60,11 +61,11 @@ def detect(cfg_filename, test_img_filename):
     os.system(
         cmd.format(
             os.path.join(DARKNET_DIR, "predictions.jpg"),
-            os.path.join(test_img_dir, "output_" + test_img_filename),
+            os.path.join(data_dir, "output_" + img_filename),
         )
     )
 
-    os.remove(os.path.join(WORKING_DIR, "test_images", filename))
+    os.remove(os.path.join(data_dir, filename))
 
 
 def remove_cfg_test_file(cfg_filename):
