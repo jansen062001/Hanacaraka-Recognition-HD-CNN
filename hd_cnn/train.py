@@ -4,9 +4,9 @@ from keras.callbacks import TensorBoard, ModelCheckpoint
 import time
 import numpy as np
 import argparse
+import os
 
-from .model import *
-from .config import *
+from . import model, config
 
 
 def save_chart(history, path, initial_epoch, epochs):
@@ -36,6 +36,9 @@ def save_chart(history, path, initial_epoch, epochs):
 
 
 def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
+    plt_loc = "lower right"
+    plt_label = "Fine {}"
+
     epochs_range = range(initial_epoch, epochs)
     plt.figure(figsize=(32, 32))
 
@@ -44,10 +47,10 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     for history in historys:
         acc = history.history["categorical_accuracy"]
 
-        plt.plot(epochs_range, acc, label="Fine {}".format(count))
+        plt.plot(epochs_range, acc, label=plt_label.format(count))
 
         count += 1
-    plt.legend(loc="lower right")
+    plt.legend(loc=plt_loc)
     plt.title("Training Accuracy")
 
     plt.subplot(4, 1, 2)
@@ -55,10 +58,10 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     for history in historys:
         val_acc = history.history["val_categorical_accuracy"]
 
-        plt.plot(epochs_range, val_acc, label="Fine {}".format(count))
+        plt.plot(epochs_range, val_acc, label=plt_label.format(count))
 
         count += 1
-    plt.legend(loc="lower right")
+    plt.legend(loc=plt_loc)
     plt.title("Validation Accuracy")
 
     plt.subplot(4, 1, 3)
@@ -66,10 +69,10 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     for history in historys:
         loss = history.history["loss"]
 
-        plt.plot(epochs_range, loss, label="Fine {}".format(count))
+        plt.plot(epochs_range, loss, label=plt_label.format(count))
 
         count += 1
-    plt.legend(loc="lower right")
+    plt.legend(loc=plt_loc)
     plt.title("Training Loss")
 
     plt.subplot(4, 1, 4)
@@ -77,10 +80,10 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
     for history in historys:
         val_loss = history.history["val_loss"]
 
-        plt.plot(epochs_range, val_loss, label="Fine {}".format(count))
+        plt.plot(epochs_range, val_loss, label=plt_label.format(count))
 
         count += 1
-    plt.legend(loc="lower right")
+    plt.legend(loc=plt_loc)
     plt.title("Validation Loss")
 
     plt.savefig(path)
@@ -88,42 +91,42 @@ def save_train_fine_model_chart(historys, path, initial_epoch, epochs):
 
 def train_single_classifier(initial_epoch, epochs):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(TRAIN_DATASET_DIR, "fine"),
+        os.path.join(config.TRAIN_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(VALID_DATASET_DIR, "fine"),
+        os.path.join(config.VALID_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
-    model = single_classifier_model(
-        SINGLE_CLASSIFIER_MODEL_LEARNING_RATE,
-        HD_CNN_IMG_WIDTH,
-        HD_CNN_IMG_HEIGHT,
-        HD_CNN_IMG_CHANNEL,
-        FINE_CLASS_NUM,
+    single_classifier_model = model.single_classifier_model(
+        config.SINGLE_CLASSIFIER_MODEL_LEARNING_RATE,
+        config.HD_CNN_IMG_WIDTH,
+        config.HD_CNN_IMG_HEIGHT,
+        config.HD_CNN_IMG_CHANNEL,
+        config.FINE_CLASS_NUM,
     )
 
     current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    log_dir = os.path.join(LOG_DIR, current_time)
+    log_dir = os.path.join(config.LOG_DIR, current_time)
     tensorboard = TensorBoard(
         log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
     )
 
     checkpoint = ModelCheckpoint(
-        filepath=SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH,
+        filepath=config.SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH,
         save_weights_only=True,
         save_best_only=True,
     )
 
-    history = model.fit(
+    history = single_classifier_model.fit(
         train_ds,
         validation_data=val_ds,
         initial_epoch=initial_epoch,
@@ -133,7 +136,7 @@ def train_single_classifier(initial_epoch, epochs):
 
     save_chart(
         history,
-        os.path.join(HD_CNN_DIR, "data", "single_classifier_train_chart.png"),
+        os.path.join(config.HD_CNN_DIR, "data", "single_classifier_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -141,36 +144,38 @@ def train_single_classifier(initial_epoch, epochs):
 
 def train_coarse_classifier(initial_epoch, epochs):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(TRAIN_DATASET_DIR, "coarse"),
+        os.path.join(config.TRAIN_DATASET_DIR, "coarse"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(VALID_DATASET_DIR, "coarse"),
+        os.path.join(config.VALID_DATASET_DIR, "coarse"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
-    model = coarse_classifier_model(COARSE_CLASSIFIER_MODEL_LEARNING_RATE)
+    coarse_classifier_model = model.coarse_classifier_model(
+        config.COARSE_CLASSIFIER_MODEL_LEARNING_RATE
+    )
 
-    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    log_dir = os.path.join(LOG_DIR, current_time)
+    current_time = str(time.strftime(config.LOG_TIME_FORMAT, time.localtime()))
+    log_dir = os.path.join(config.LOG_DIR, current_time)
     tensorboard = TensorBoard(
         log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
     )
 
     checkpoint = ModelCheckpoint(
-        filepath=COARSE_CLASSIFIER_MODEL_WEIGHTS_PATH,
+        filepath=config.COARSE_CLASSIFIER_MODEL_WEIGHTS_PATH,
         save_weights_only=True,
         save_best_only=True,
     )
 
-    history = model.fit(
+    history = coarse_classifier_model.fit(
         train_ds,
         validation_data=val_ds,
         initial_epoch=initial_epoch,
@@ -180,7 +185,7 @@ def train_coarse_classifier(initial_epoch, epochs):
 
     save_chart(
         history,
-        os.path.join(HD_CNN_DIR, "data", "coarse_classifier_train_chart.png"),
+        os.path.join(config.HD_CNN_DIR, "data", "coarse_classifier_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -188,37 +193,39 @@ def train_coarse_classifier(initial_epoch, epochs):
 
 def train_fine_classifier(initial_epoch, epochs, class_idx):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(TRAIN_DATASET_DIR, "coarse_fine", str(class_idx)),
+        os.path.join(config.TRAIN_DATASET_DIR, "coarse_fine", str(class_idx)),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(VALID_DATASET_DIR, "coarse_fine", str(class_idx)),
+        os.path.join(config.VALID_DATASET_DIR, "coarse_fine", str(class_idx)),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
-        batch_size=BATCH_SIZE,
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
+        batch_size=config.BATCH_SIZE,
         label_mode="categorical",
     )
 
-    model = fine_classifier_model(FINE_CLASSIFIER_MODEL_LEARNING_RATE)
+    fine_classifier_model = model.fine_classifier_model(
+        config.FINE_CLASSIFIER_MODEL_LEARNING_RATE
+    )
 
-    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    log_dir = os.path.join(LOG_DIR, current_time)
+    current_time = str(time.strftime(config.LOG_TIME_FORMAT, time.localtime()))
+    log_dir = os.path.join(config.LOG_DIR, current_time)
     tensorboard = TensorBoard(
         log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
     )
 
-    filepath = FINE_CLASSIFIER_MODEL_WEIGHTS_PATH.format(str(class_idx))
+    filepath = config.FINE_CLASSIFIER_MODEL_WEIGHTS_PATH.format(num=str(class_idx))
     checkpoint = ModelCheckpoint(
         filepath=filepath,
         save_weights_only=True,
         save_best_only=True,
     )
 
-    history = model.fit(
+    history = fine_classifier_model.fit(
         train_ds,
         validation_data=val_ds,
         initial_epoch=initial_epoch,
@@ -231,36 +238,36 @@ def train_fine_classifier(initial_epoch, epochs, class_idx):
 
 def train_vgg16(initial_epoch, epochs, batch_size):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(TRAIN_DATASET_DIR, "fine"),
+        os.path.join(config.TRAIN_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(VALID_DATASET_DIR, "fine"),
+        os.path.join(config.VALID_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )
 
-    model = vgg16_model(learning_rate=0.001)
+    vgg16_model = model.vgg16_model(learning_rate=0.001)
 
-    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    log_dir = os.path.join(LOG_DIR, current_time)
+    current_time = str(time.strftime(config.LOG_TIME_FORMAT, time.localtime()))
+    log_dir = os.path.join(config.LOG_DIR, current_time)
     tensorboard = TensorBoard(
         log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
     )
 
     checkpoint = ModelCheckpoint(
-        filepath=os.path.join(WEIGHTS_DIR, "vgg16_model", "cp.ckpt"),
+        filepath=os.path.join(config.WEIGHTS_DIR, "vgg16_model", "cp.ckpt"),
         save_weights_only=True,
         save_best_only=True,
     )
 
-    history = model.fit(
+    history = vgg16_model.fit(
         train_ds,
         validation_data=val_ds,
         initial_epoch=initial_epoch,
@@ -270,7 +277,7 @@ def train_vgg16(initial_epoch, epochs, batch_size):
 
     save_chart(
         history,
-        os.path.join(HD_CNN_DIR, "data", "vgg16_train_chart.png"),
+        os.path.join(config.HD_CNN_DIR, "data", "vgg16_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -278,36 +285,36 @@ def train_vgg16(initial_epoch, epochs, batch_size):
 
 def train_vgg19(initial_epoch, epochs, batch_size):
     train_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(TRAIN_DATASET_DIR, "fine"),
+        os.path.join(config.TRAIN_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
-        os.path.join(VALID_DATASET_DIR, "fine"),
+        os.path.join(config.VALID_DATASET_DIR, "fine"),
         seed=123,
-        image_size=(HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT),
+        image_size=(config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT),
         batch_size=batch_size,
         label_mode="categorical",
     )
 
-    model = vgg19_model(learning_rate=0.001)
+    vgg19_model = model.vgg19_model(learning_rate=0.001)
 
-    current_time = str(time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime()))
-    log_dir = os.path.join(LOG_DIR, current_time)
+    current_time = str(time.strftime(config.LOG_TIME_FORMAT, time.localtime()))
+    log_dir = os.path.join(config.LOG_DIR, current_time)
     tensorboard = TensorBoard(
         log_dir=log_dir, histogram_freq=0, write_graph=True, write_images=True
     )
 
     checkpoint = ModelCheckpoint(
-        filepath=os.path.join(WEIGHTS_DIR, "vgg19_model", "cp.ckpt"),
+        filepath=os.path.join(config.WEIGHTS_DIR, "vgg19_model", "cp.ckpt"),
         save_weights_only=True,
         save_best_only=True,
     )
 
-    history = model.fit(
+    history = vgg19_model.fit(
         train_ds,
         validation_data=val_ds,
         initial_epoch=initial_epoch,
@@ -317,7 +324,7 @@ def train_vgg19(initial_epoch, epochs, batch_size):
 
     save_chart(
         history,
-        os.path.join(HD_CNN_DIR, "data", "vgg19_train_chart.png"),
+        os.path.join(config.HD_CNN_DIR, "data", "vgg19_train_chart.png"),
         initial_epoch,
         epochs,
     )
@@ -339,23 +346,23 @@ def get_probabilistic_averaging_result(x_test):
     fine_predictions = []
     final_predictions = []
 
-    coarse_layer = coarse_classifier_model(
-        COARSE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True
+    coarse_layer = model.coarse_classifier_model(
+        config.COARSE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True
     )
     predictions = coarse_layer.predict(x_test, batch_size=1)
     for i in range(len(predictions)):
         coarse_predictions.append(predictions[i])
 
     coarse_idx = []
-    for i in range(COARSE_CLASS_NUM):
+    for i in range(config.COARSE_CLASS_NUM):
         coarse_idx.append(str(i))
     coarse_idx.sort()
     for i in range(len(coarse_idx)):
         coarse_idx[i] = int(coarse_idx[i])
 
     for i in coarse_idx:
-        fine_layer = fine_classifier_model(
-            FINE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True, class_idx=i
+        fine_layer = model.fine_classifier_model(
+            config.FINE_CLASSIFIER_MODEL_LEARNING_RATE, load_weight=True, class_idx=i
         )
 
         arr_predictions = []
@@ -367,9 +374,9 @@ def get_probabilistic_averaging_result(x_test):
 
     prediction_size = len(coarse_predictions)
     for img in range(prediction_size):
-        proba = [0] * FINE_CLASS_NUM
-        for finec in range(FINE_CLASS_NUM):
-            for coarsec in range(COARSE_CLASS_NUM):
+        proba = [0] * config.FINE_CLASS_NUM
+        for finec in range(config.FINE_CLASS_NUM):
+            for coarsec in range(config.COARSE_CLASS_NUM):
                 proba[finec] += (
                     coarse_predictions[img][coarsec]
                     * fine_predictions[coarsec][img][finec]
@@ -380,16 +387,16 @@ def get_probabilistic_averaging_result(x_test):
 
 
 def main(args):
-    if not os.path.exists(LOG_DIR):
-        os.mkdir(LOG_DIR)
-    if not os.path.exists(WEIGHTS_DIR):
-        os.mkdir(WEIGHTS_DIR)
+    if not os.path.exists(config.LOG_DIR):
+        os.mkdir(config.LOG_DIR)
+    if not os.path.exists(config.WEIGHTS_DIR):
+        os.mkdir(config.WEIGHTS_DIR)
 
     if args.model == "hd_cnn":
         train_single_classifier(initial_epoch=0, epochs=50)
         train_coarse_classifier(initial_epoch=50, epochs=100)
 
-        for i in range(COARSE_CLASS_NUM):
+        for i in range(config.COARSE_CLASS_NUM):
             initial_epoch = 0
             epochs = 50
 
@@ -399,7 +406,7 @@ def main(args):
             save_chart(
                 history,
                 os.path.join(
-                    HD_CNN_DIR,
+                    config.HD_CNN_DIR,
                     "data",
                     "fine_classifier_{}_train_chart.png".format(str(i)),
                 ),
@@ -410,13 +417,13 @@ def main(args):
         train_vgg16(
             initial_epoch=0,
             epochs=100,
-            batch_size=BATCH_SIZE,
+            batch_size=config.BATCH_SIZE,
         )
     elif args.model == "vgg19":  # Benchmark
         train_vgg19(
             initial_epoch=0,
             epochs=100,
-            batch_size=BATCH_SIZE,
+            batch_size=config.BATCH_SIZE,
         )
 
 

@@ -4,15 +4,15 @@ import shutil
 import uuid
 import cv2
 
-from .config import *
+from . import config
 
 
 def create_cfg_test_file(cfg_filename, width, height):
-    darknet_cfg_dir = os.path.join(DARKNET_DIR, "cfg")
+    darknet_cfg_dir = os.path.join(config.DARKNET_DIR, "cfg")
     test_cfg_path = os.path.join(darknet_cfg_dir, cfg_filename)
 
     shutil.copyfile(
-        os.path.join(darknet_cfg_dir, YOLO_CFG_FILENAME),
+        os.path.join(darknet_cfg_dir, config.YOLO_CFG_FILENAME),
         test_cfg_path,
     )
 
@@ -24,34 +24,34 @@ def create_cfg_test_file(cfg_filename, width, height):
     )
     cmd = cmd.format(
         cfg_path=test_cfg_path,
-        batch=YOLO_BATCH,
+        batch=config.YOLO_BATCH,
         new_batch=1,
-        subdivisions=YOLO_SUBDIVISIONS,
+        subdivisions=config.YOLO_SUBDIVISIONS,
         new_subdivisions=1,
-        width=YOLO_IMG_SIZE,
+        width=config.YOLO_IMG_SIZE,
         new_width=width,
-        height=YOLO_IMG_SIZE,
+        height=config.YOLO_IMG_SIZE,
         new_height=height,
     )
     os.system(cmd)
 
 
 def detect(cfg_filename, img_filename):
-    data_dir = os.path.join(YOLO_DIR, "data")
+    data_dir = os.path.join(config.YOLO_DIR, "data")
     img_path = os.path.join(data_dir, img_filename)
 
     img = cv2.imread(img_path, 0)
     filename = uuid.uuid4().hex + ".jpg"
     cv2.imwrite(os.path.join(data_dir, filename), img)
 
-    os.chdir(DARKNET_DIR)
+    os.chdir(config.DARKNET_DIR)
     cmd = "{} detector test {} {} {} -ext_output -dont_show {} > {}"
     os.system(
         cmd.format(
-            os.path.join(DARKNET_DIR, "darknet"),
-            DARKNET_OBJ_DATA_PATH,
-            os.path.join(DARKNET_DIR, "cfg", cfg_filename),
-            os.path.join(WEIGHTS_DIR, WEIGHTS_RESULT_FILENAME),
+            os.path.join(config.DARKNET_DIR, "darknet"),
+            config.DARKNET_OBJ_DATA_PATH,
+            os.path.join(config.DARKNET_DIR, "cfg", cfg_filename),
+            os.path.join(config.WEIGHTS_DIR, config.WEIGHTS_RESULT_FILENAME),
             os.path.join(data_dir, filename),
             os.path.join(data_dir, "result.txt"),
         )
@@ -60,7 +60,7 @@ def detect(cfg_filename, img_filename):
     cmd = "cp {} {}"
     os.system(
         cmd.format(
-            os.path.join(DARKNET_DIR, "predictions.jpg"),
+            os.path.join(config.DARKNET_DIR, "predictions.jpg"),
             os.path.join(data_dir, "output_" + img_filename),
         )
     )
@@ -69,7 +69,7 @@ def detect(cfg_filename, img_filename):
 
 
 def remove_cfg_test_file(cfg_filename):
-    os.remove(os.path.join(DARKNET_DIR, "cfg", cfg_filename))
+    os.remove(os.path.join(config.DARKNET_DIR, "cfg", cfg_filename))
 
 
 def run_test(width, height, filename, change_working_dir=False, working_dir_path=None):

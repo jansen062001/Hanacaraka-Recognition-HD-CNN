@@ -30,15 +30,17 @@ FINE_CLASSES_TXT_PATH = os.path.join(PROCESSED_DATASET_DIR, "fine_classes.txt")
 
 SINGLE_CLASSIFIER_MODEL_LEARNING_RATE = 0.001
 SINGLE_CLASSIFIER_MODEL_WEIGHTS_PATH = os.path.join(
-    WEIGHTS_DIR, "single_classifier_model", "cp.ckpt"
+    WEIGHTS_DIR, "single_classifier_model", "single_classifier_model.ckpt"
 )
 
 COARSE_CLASSIFIER_MODEL_LEARNING_RATE = 0.005
 COARSE_CLASSIFIER_MODEL_WEIGHTS_PATH = os.path.join(
-    WEIGHTS_DIR, "coarse_classifier_model", "cp.ckpt"
+    WEIGHTS_DIR, "coarse_classifier_model", "coarse_classifier_model.ckpt"
 )
 
 FINE_CLASSIFIER_MODEL_LEARNING_RATE = 0.01
 FINE_CLASSIFIER_MODEL_WEIGHTS_PATH = os.path.join(
-    WEIGHTS_DIR, "fine_classifier_model_{}", "cp.ckpt"
+    WEIGHTS_DIR, "fine_classifier_model_{num}", "fine_classifier_model_{num}.ckpt"
 )
+
+LOG_TIME_FORMAT = "%Y-%m-%d-%H-%M-%S"

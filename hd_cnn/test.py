@@ -5,11 +5,11 @@ import numpy as np
 import uuid
 
 from .train import get_probabilistic_averaging_result
-from .config import *
+from . import config
 
 
 def get_fine_class_name(class_idx):
-    with open(FINE_CLASSES_TXT_PATH, "r") as f:
+    with open(config.FINE_CLASSES_TXT_PATH, "r") as f:
         idx = 0
 
         for line in f.readlines():
@@ -25,7 +25,9 @@ def get_fine_class_name(class_idx):
 def run_test(imgs):
     x = []
     for img in imgs:
-        resized_img = cv2.resize(img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT))
+        resized_img = cv2.resize(
+            img, (config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT)
+        )
         x.append(resized_img)
     x = np.array(x)
 
@@ -43,11 +45,11 @@ def run_test(imgs):
 
 def main(args):
     filename = args.filename
-    img = cv2.imread(os.path.join(HD_CNN_DIR, "data", filename), 0)
-    img = cv2.resize(img, (HD_CNN_IMG_WIDTH, HD_CNN_IMG_HEIGHT))
+    img = cv2.imread(os.path.join(config.HD_CNN_DIR, "data", filename), 0)
+    img = cv2.resize(img, (config.HD_CNN_IMG_WIDTH, config.HD_CNN_IMG_HEIGHT))
 
     tmp_img_filename = uuid.uuid4().hex + ".jpg"
-    tmp_img_path = os.path.join(HD_CNN_DIR, "data", tmp_img_filename)
+    tmp_img_path = os.path.join(config.HD_CNN_DIR, "data", tmp_img_filename)
     cv2.imwrite(tmp_img_path, img)
 
     img = cv2.imread(tmp_img_path)

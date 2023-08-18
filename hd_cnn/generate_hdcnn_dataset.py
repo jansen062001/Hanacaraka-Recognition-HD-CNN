@@ -42,36 +42,30 @@ def get_class_name(class_id):
 
 
 def generate_filtered_dataset(x, y):
-    dataset_idx_to_delete = []
-
-    if hdcnn_config.MIN_DATA_EACH_CLASS is not None:
-        list_label = np.unique(np.array(y))
-
-        for i in range(len(list_label)):
-            count = 0
-            label_items_idx = []
-
-            for j in range(len(y)):
-                if y[j] == list_label[i]:
-                    count += 1
-                    label_items_idx.append(j)
-                if count >= hdcnn_config.MIN_DATA_EACH_CLASS:
-                    break
-
-            if count < hdcnn_config.MIN_DATA_EACH_CLASS:
-                for j in range(len(label_items_idx)):
-                    dataset_idx_to_delete.append(label_items_idx[j])
-
+    list_uniq_label = np.unique(np.array(y))
     new_x = []
     new_y = []
+    new_list_label = {}
+
+    for label in list_uniq_label:
+        if (
+            hdcnn_config.MIN_DATA_EACH_CLASS is not None
+            and y.count(label) < hdcnn_config.MIN_DATA_EACH_CLASS
+        ):
+            continue
+
+        new_list_label[label] = {"count": 0}
+
     for i in range(len(x)):
-        if i in dataset_idx_to_delete:
+        if y[i] not in new_list_label:
             continue
         if (
             hdcnn_config.MAX_DATA_EACH_CLASS is not None
-            and new_y.count(y[i]) + 1 > hdcnn_config.MAX_DATA_EACH_CLASS
+            and new_list_label[y[i]]["count"] + 1 > hdcnn_config.MAX_DATA_EACH_CLASS
         ):
             continue
+
+        new_list_label[y[i]]["count"] += 1
 
         new_x.append(x[i])
         new_y.append(y[i])
@@ -113,32 +107,10 @@ def split_dataset(x, y, train_size, valid_size, test_size):
     return x_train, x_val, x_test, y_train, y_val, y_test
 
 
-def main(args):
-    train_size = int(args.train_size)
-    valid_size = int(args.valid_size)
-    test_size = int(args.test_size)
-
-    if train_size + valid_size + test_size != 100:
-        print("INVALID SPLIT SIZE")
-        return
-    if not os.path.exists(hdcnn_config.RAW_CLASSES_TXT_PATH):
-        print("classes.txt doesn't exist")
-        return
-    if (
-        hdcnn_config.MIN_DATA_EACH_CLASS is not None
-        and hdcnn_config.MIN_DATA_EACH_CLASS <= 0
-    ):
-        print("MIN_DATA_EACH_CLASS must be > 0")
-        return
-    if (
-        hdcnn_config.MAX_DATA_EACH_CLASS is not None
-        and hdcnn_config.MAX_DATA_EACH_CLASS < hdcnn_config.MIN_DATA_EACH_CLASS
-    ):
-        print("MAX_DATA_EACH_CLASS must be >= MIN_DATA_EACH_CLASS")
-        return
-
+def get_processed_dataset():
     x = []
     y = []
+
     for dataset_ext in hdcnn_config.IMG_DATASET_EXT:
         path = os.path.join(hdcnn_config.RAW_DATASET_DIR, "*." + dataset_ext)
         for path_and_filename in glob.iglob(path):
@@ -169,56 +141,62 @@ def main(args):
                     x.append(resized_img)
                     y.append(class_name)
 
-    x, y = generate_filtered_dataset(x, y)
-    x_train, x_val, x_test, y_train, y_val, y_test = split_dataset(
-        x, y, train_size, valid_size, test_size
+    return x, y
+
+
+def save_dataset(
+    x_train_or_val, y_train_or_val, coarse_class, fine_class, is_train_dataset
+):
+    dataset_dir = (
+        hdcnn_config.TRAIN_DATASET_DIR
+        if is_train_dataset
+        else hdcnn_config.VALID_DATASET_DIR
     )
-    coarse_class, fine_class = get_list_coarse_fine_class(y)
+    coarse_dir = os.path.join(dataset_dir, "coarse")
+    fine_dir = os.path.join(dataset_dir, "fine")
+    coarse_fine_dir = os.path.join(dataset_dir, "coarse_fine")
 
-    list_x = [x_train, x_val]
-    list_y = [y_train, y_val]
-    list_dir = [hdcnn_config.TRAIN_DATASET_DIR, hdcnn_config.VALID_DATASET_DIR]
-    for i in range(len(list_x)):
-        coarse_dir = os.path.join(list_dir[i], "coarse")
-        fine_dir = os.path.join(list_dir[i], "fine")
-        coarse_fine_dir = os.path.join(list_dir[i], "coarse_fine")
+    for idx_coarse in range(len(coarse_class)):
+        first_dir = os.path.join(coarse_fine_dir, str(idx_coarse))
+        if not os.path.exists(first_dir):
+            os.mkdir(first_dir)
 
-        for idx_coarse in range(len(coarse_class)):
-            first_dir = os.path.join(coarse_fine_dir, str(idx_coarse))
-            if not os.path.exists(first_dir):
-                os.mkdir(first_dir)
+        for idx_fine in range(len(fine_class)):
+            second_dir = os.path.join(first_dir, str(idx_fine))
+            if not os.path.exists(second_dir):
+                os.mkdir(second_dir)
 
-            for idx_fine in range(len(fine_class)):
-                second_dir = os.path.join(first_dir, str(idx_fine))
-                if not os.path.exists(second_dir):
-                    os.mkdir(second_dir)
+    for idx in tqdm(range(len(x_train_or_val))):
+        x = x_train_or_val[idx]
+        y = y_train_or_val[idx]
 
-        for j in tqdm(range(len(list_x[i]))):
-            x = list_x[i][j]
-            y = list_y[i][j]
+        coarse_class_idx = coarse_class.index(y.split("_")[0])
+        fine_class_idx = fine_class.index(y)
 
-            coarse_class_idx = coarse_class.index(y.split("_")[0])
-            fine_class_idx = fine_class.index(y)
+        coarse_class_dir = os.path.join(coarse_dir, str(coarse_class_idx))
+        if not os.path.exists(coarse_class_dir):
+            os.mkdir(coarse_class_dir)
 
-            coarse_class_dir = os.path.join(coarse_dir, str(coarse_class_idx))
-            if not os.path.exists(coarse_class_dir):
-                os.mkdir(coarse_class_dir)
+        fine_class_dir = os.path.join(fine_dir, str(fine_class_idx))
+        if not os.path.exists(fine_class_dir):
+            os.mkdir(fine_class_dir)
 
-            fine_class_dir = os.path.join(fine_dir, str(fine_class_idx))
-            if not os.path.exists(fine_class_dir):
-                os.mkdir(fine_class_dir)
+        coarse_fine_class_dir = os.path.join(
+            coarse_fine_dir, str(coarse_class_idx), str(fine_class_idx)
+        )
 
-            coarse_fine_class_dir = os.path.join(
-                coarse_fine_dir, str(coarse_class_idx), str(fine_class_idx)
-            )
+        filename = str(idx + 1) + ".jpg"
+        cv2.imwrite(os.path.join(coarse_class_dir, filename), x)
+        cv2.imwrite(os.path.join(fine_class_dir, filename), x)
+        cv2.imwrite(os.path.join(coarse_fine_class_dir, filename), x)
 
-            filename = str(j + 1) + ".jpg"
-            cv2.imwrite(os.path.join(coarse_class_dir, filename), x)
-            cv2.imwrite(os.path.join(fine_class_dir, filename), x)
-            cv2.imwrite(os.path.join(coarse_fine_class_dir, filename), x)
 
-    for i in tqdm(range(len(x_test))):
-        fine_class_idx = fine_class.index(y_test[i])
+def save_test_dataset(x_test, y_test, fine_class):
+    for idx in tqdm(range(len(x_test))):
+        x = x_test[idx]
+        y = y_test[idx]
+
+        fine_class_idx = fine_class.index(y)
 
         fine_class_dir = os.path.join(
             hdcnn_config.TEST_DATASET_DIR, str(fine_class_idx)
@@ -226,9 +204,11 @@ def main(args):
         if not os.path.exists(fine_class_dir):
             os.mkdir(fine_class_dir)
 
-        filename = str(i + 1) + ".jpg"
-        cv2.imwrite(os.path.join(fine_class_dir, filename), x_test[i])
+        filename = str(idx + 1) + ".jpg"
+        cv2.imwrite(os.path.join(fine_class_dir, filename), x)
 
+
+def write_sorted_coarse_class(coarse_class):
     with open(hdcnn_config.COARSE_CLASSES_TXT_PATH, "w") as f:
         coarse_class_dict = []
         for i in range(len(coarse_class)):
@@ -238,6 +218,8 @@ def main(args):
         for i in range(len(coarse_class_dict)):
             f.write(coarse_class_dict[i]["class_name"] + "\n")
 
+
+def write_sorted_fine_class(fine_class):
     with open(hdcnn_config.FINE_CLASSES_TXT_PATH, "w") as f:
         fine_class_dict = []
         for i in range(len(fine_class)):
@@ -246,6 +228,46 @@ def main(args):
 
         for i in range(len(fine_class_dict)):
             f.write(fine_class_dict[i]["class_name"] + "\n")
+
+
+def main(args):
+    train_size = int(args.train_size)
+    valid_size = int(args.valid_size)
+    test_size = int(args.test_size)
+
+    if train_size + valid_size + test_size != 100:
+        print("INVALID SPLIT SIZE")
+        return
+    if not os.path.exists(hdcnn_config.RAW_CLASSES_TXT_PATH):
+        print("classes.txt doesn't exist")
+        return
+    if (
+        hdcnn_config.MIN_DATA_EACH_CLASS is not None
+        and hdcnn_config.MIN_DATA_EACH_CLASS <= 0
+    ):
+        print("MIN_DATA_EACH_CLASS must be > 0")
+        return
+    if (
+        hdcnn_config.MAX_DATA_EACH_CLASS is not None
+        and hdcnn_config.MAX_DATA_EACH_CLASS < hdcnn_config.MIN_DATA_EACH_CLASS
+    ):
+        print("MAX_DATA_EACH_CLASS must be >= MIN_DATA_EACH_CLASS")
+        return
+
+    x, y = get_processed_dataset()
+    x, y = generate_filtered_dataset(x, y)
+    x_train, x_val, x_test, y_train, y_val, y_test = split_dataset(
+        x, y, train_size, valid_size, test_size
+    )
+
+    coarse_class, fine_class = get_list_coarse_fine_class(y)
+
+    save_dataset(x_train, y_train, coarse_class, fine_class, True)
+    save_dataset(x_val, y_val, coarse_class, fine_class, False)
+    save_test_dataset(x_test, y_test, fine_class)
+
+    write_sorted_coarse_class(coarse_class)
+    write_sorted_fine_class(fine_class)
 
 
 if __name__ == "__main__":
