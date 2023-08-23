@@ -7,6 +7,7 @@ Image recognition for Javanese script using YOLOv4 Darknet and HD-CNN. This proj
 - CentOS Stream release 9
 - CUDA Toolkit 11.8
 - cuDNN 8.6
+- python 3.8.16
 - tensorflow 2.12.0
 - opencv 4.6.0
 
@@ -33,7 +34,7 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
 ## Training and Testing YOLOv4 Darknet
 
 1. Preparing The Dataset
-   - Download and unzip the dataset with YOLO Darknet format from roboflow: [https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition](https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition)
+   - Download and unzip the augmented dataset with YOLO Darknet format from roboflow: [https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition](https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition)
       ```bash
       Hanacaraka YOLOv4 Darknet.v14i.darknet
       │   README.dataset.txt
@@ -46,33 +47,31 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
             _darknet.labels
       ```
    - Because our YOLOv4 model will use 416x416 (WxH), so each image in the dataset needs to be sliced into 416x416. Use this Github [repo](https://github.com/slanj/yolo-tiling) to do this work.
-   - Copy all sliced images (train and test) and classes.names into `./dataset/yolov4_darknet/`
+   - Copy all sliced images (train and test) and classes.names into `./yolov4_darknet/dataset/raw/`
    - Rename `classes.names` to `classes.txt`
-   - Run these commands to re-label and move the dataset into `./yolov4_darknet/dataset/`
+   - Run these commands to re-label and move the dataset into `./yolov4_darknet/dataset/processed/`
       ```bash
-      python generate_yolo_dataset.py
+      python -m yolov4_darknet.generate_yolo_dataset --train_size=70 --valid_size=20 --test_size=10
       ```
 2. Training
     ```bash
-    cd ./yolov4_darknet
-    python -m src.train
+    python -m yolov4_darknet.train
     ```
 
-    .weights file from the training process will be placed on `./yolov4_darknet/training/`
+    .weights file from the training process will be placed on `./yolov4_darknet/weights/`
 3. Testing
-   - Put the image file in the directory `./yolov4_darknet/test_images/`
+   - Put the image file in the directory `./yolov4_darknet/data/`
    - Run these commands
       ```bash
-      cd ./yolov4_darknet
-      python -m src.test --width=416 --height=416 --filename=example.jpg
+      python -m yolov4_darknet.test --width=416 --height=416 --filename=example.jpg
       ```
 
-      There is a file called `output_example.jpg` in the directory `./yolov4_darknet/test_images/` as the output
+      There is a file called `output_example.jpg` in the directory `./yolov4_darknet/data/` as the output
 
 ## Training and Testing HD-CNN
 
 1. Preparing The Dataset
-   - Download and unzip the dataset with YOLO Darknet format from roboflow: [https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition](https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition)
+   - Download and unzip the augmented dataset with YOLO Darknet format from roboflow: [https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition](https://universe.roboflow.com/thesis-dicgg/hanacaraka-recognition)
       ```bash
       Hanacaraka YOLOv4 Darknet.v14i.darknet
       │   README.dataset.txt
@@ -84,27 +83,23 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
             9_png.rf.f7a6d330b72103e36cc779f7a2c5d075.txt
             _darknet.labels
       ```
-   - Copy all files inside the `train` folder into `./dataset/hd_cnn/`
+   - Copy all files inside the `train` folder into `./hd_cnn/dataset/raw/`
    - Rename `_darknet.labels` to `classes.txt`
-   - Run these commands to re-label and move the dataset into `./hd_cnn/dataset/`
+   - Run these commands to re-label and move the dataset into `./hd_cnn/dataset/processed/`
       ```bash
-      python generate_hdcnn_dataset.py
+      python -m hd_cnn.generate_hdcnn_dataset --train_size=70 --valid_size=20 --test_size=10
       ```
 2. Training
     ```bash
-    cd ./hd_cnn
-    python -m src.train --train=single_layer
-    python -m src.train --train=coarse_layer
-    python -m src.train --train=fine_layer
+    python -m hd_cnn.train --model=hd_cnn
     ```
 
     .weights file from the training process will be placed on `./hd_cnn/weights/`
 3. Testing
-   - Put the image file in the directory `./hd_cnn/test_img/`
+   - Put the image file in the directory `./hd_cnn/data/`
    - Run these commands
       ```bash
-      cd ./hd_cnn
-      python -m src.test --filename=example.jpg
+      python -m hd_cnn.test --filename=example.jpg
       ```
 
 ## Run YOLOv4 + HD-CNN
@@ -112,7 +107,6 @@ git clone https://github.com/jansen062001/Hanacaraka-Recognition-HD-CNN.git
 - Put the image file in the directory `./`
 - Run these commands
    ```bash
-   cd ./
    python main.py --filename=example.jpg
    ```
 - After the process is complete, there is a file called `result.jpg` in the directory `./` as the final output
